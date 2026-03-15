@@ -1,0 +1,17 @@
+.offer-section {
+  padding: 5rem 0;
+  background: var(--off-white);
+  font-family: var(--font);
+}
+.offer-section__header {
+  max-width: 560px;
+  margin-bottom: 3rem;
+}
+.offer-section__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.4rem;
+}
+@media (max-width: 768px) {
+  .offer-section { padding: 3.5rem 0; }
+}

@@ -1,0 +1,90 @@
+.event-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.4rem 1.5rem;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.22s, border-color 0.22s, box-shadow 0.22s;
+  font-family: var(--font);
+}
+.event-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--blue);
+  box-shadow: var(--card-shadow);
+}
+.event-card--past { opacity: 0.82; }
+.event-card--past:hover { border-color: var(--text-muted); }
+
+/* top row */
+.event-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.event-card__type {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.event-card__status {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.event-card__status--upcoming {
+  background: #e8f0fc;
+  color: var(--blue);
+  border: 1px solid rgba(0,66,153,0.2);
+}
+.event-card__status--past {
+  background: var(--light-gray);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+/* title */
+.event-card__title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.35;
+}
+
+/* tags */
+.event-card__tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.event-card__tag {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--light-gray);
+  border-radius: 999px;
+  padding: 3px 9px;
+}
+
+/* meta */
+.event-card__meta { display: flex; flex-direction: column; gap: 5px; margin-top: 4px; }
+.event-card__meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.event-card__meta-row svg { color: var(--blue); flex-shrink: 0; }
+
+/* cta */
+.event-card__cta {
+  margin-top: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--blue);
+}
+.event-card--past .event-card__cta { color: var(--text-muted); }
