@@ -73,7 +73,7 @@ export default function Hero() {
       { r: 0.09, dist: 2.6,  speed: 0.55, color: 0x004299, tilt: Math.PI * 0.6 },
     ];
 
-    const orbiters = orbitData.map(({ r, dist, color, tilt }) => {
+    const orbiters = orbitData.map(({ r, dist, color, tilt, speed }) => {
       const mat  = new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.7 });
       const mesh = new THREE.Mesh(new THREE.SphereGeometry(r, 12, 12), mat);
       const pivot = new THREE.Object3D();
@@ -81,11 +81,9 @@ export default function Hero() {
       pivot.add(mesh);
       mesh.position.x = dist;
       scene.add(pivot);
-      return { pivot, speed: orbitData[orbiters?.length ?? 0]?.speed };
+      return { pivot, speed };
     });
 
-    // fix: store speeds separately
-    const speeds = orbitData.map(d => d.speed);
 
     // ── Orbit rings ──
     orbitData.forEach(({ dist, tilt, color }) => {
@@ -130,8 +128,8 @@ export default function Hero() {
       wire.rotation.y = -t * 0.18;
       wire.rotation.x = core.rotation.x;
 
-      orbiters.forEach(({ pivot }, i) => {
-        pivot.rotation.y += speeds[i] * 0.011;
+      orbiters.forEach(({ pivot, speed }) => {
+        pivot.rotation.y += speed * 0.011;
       });
 
       camera.position.x += (mx * 0.5 - camera.position.x) * 0.04;

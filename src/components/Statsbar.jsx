@@ -1,12 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import "./StatsBar.css";
 
-const STATS = [
-  { num: 24,  suffix: "+", label: "Events Held"           },
-  { num: 8,   suffix: "",  label: "Departments Reached"   },
-  { num: 35,  suffix: "+", label: "AI Representatives"    },
-  { num: 400, suffix: "+", label: "Participants Trained"  },
-];
+
 
 function StatCell({ num, suffix, label }) {
   const [count, setCount] = useState(0);
@@ -40,9 +35,37 @@ function StatCell({ num, suffix, label }) {
 }
 
 export default function StatsBar() {
+
+const [dynamicStats, setDynamicStats] = useState([
+    { num: 0, suffix: "+", label: "Events Held" },
+    { num: 0, suffix: "",  label: "Departments Reached" },
+    { num: 0, suffix: "+", label: "AI Representatives" },
+    { num: 0, suffix: "+", label: "Participants Trained" },
+  ]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/stats");
+        const data = await response.json();
+
+        setDynamicStats([
+          { num: data.events || 0,          suffix: "+", label: "Events Held" },
+          { num: data.departments || 0,     suffix: "",  label: "Departments Reached" },
+          { num: data.representatives || 0, suffix: "+", label: "AI Representatives" },
+          { num: data.participants || 0,    suffix: "+", label: "Participants Trained" },
+        ]);
+      } catch (error) {
+        console.error("Failed to load stats from database:", error);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
   return (
     <section className="stats">
-      {STATS.map((s) => <StatCell key={s.label} {...s} />)}
+      {dynamicStats.map((s) => <StatCell key={s.label} {...s} />)}
     </section>
   );
 }
