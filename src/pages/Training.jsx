@@ -1,16 +1,18 @@
 import { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import SearchFilterBar from "../components/Searchfilterbar";
-import EventCard       from "../components/Eventcard";
+import SearchFilterBar from "../components/SearchFilterBar";
+import EventCard       from "../components/EventCard";
 import Footer          from "../components/Footer";
-import { EVENTS, DEPARTMENTS } from "../data/mockData";
+import { useEvents }   from "../context/EventsContext";
+import { DEPARTMENTS } from "../data/mockData";
 import "./Training.css";
 
 const TYPES  = ["Workshop", "Seminar", "Competition"];
-const TOPICS = [...new Set(EVENTS.map((e) => e.topic))];
+const TOPICS = ["Python", "Data Science", "Machine Learning", "Automation", "AI Ethics", "AI in Research", "AI Challenge"];
 
 export default function Training() {
   const [searchParams] = useSearchParams();
+  const { events }     = useEvents();
 
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({
@@ -24,7 +26,7 @@ export default function Training() {
     setFilters((prev) => ({ ...prev, [key]: value }));
 
   const results = useMemo(() => {
-    return EVENTS.filter((e) => {
+    return events.filter((e) => {
       const q = search.toLowerCase();
       if (q && !e.title.toLowerCase().includes(q) && !e.topic.toLowerCase().includes(q)) return false;
       if (filters.department && e.department !== filters.department) return false;
@@ -33,11 +35,10 @@ export default function Training() {
       if (filters.status     && e.status     !== filters.status)     return false;
       return true;
     });
-  }, [search, filters]);
+  }, [search, filters, events]);
 
   return (
     <div className="page training-page">
-      {/* Page header */}
       <div className="training-page__header">
         <div className="container">
           <span className="section-tag">Training Hub</span>
@@ -50,7 +51,6 @@ export default function Training() {
       </div>
 
       <div className="container training-page__body">
-        {/* Search + filters */}
         <SearchFilterBar
           search={search}
           onSearch={setSearch}
@@ -61,12 +61,10 @@ export default function Training() {
           topics={TOPICS}
         />
 
-        {/* Results count */}
         <div className="training-page__count">
           {results.length} event{results.length !== 1 ? "s" : ""} found
         </div>
 
-        {/* Grid */}
         {results.length > 0 ? (
           <div className="training-page__grid">
             {results.map((e) => <EventCard key={e.id} {...e} />)}

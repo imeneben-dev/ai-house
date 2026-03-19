@@ -1,17 +1,18 @@
 import { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { EVENTS } from "../data/mockData";
+import { useAuth }   from "../context/AuthContext";
+import { useEvents } from "../context/EventsContext";
 import Footer from "../components/Footer";
-import "./Eventdetail.css";
+import "./EventDetail.css";
 
 export default function EventDetail() {
-  const { id }    = useParams();
-  const { user }  = useAuth();
-  const navigate  = useNavigate();
-  const event     = EVENTS.find((e) => e.id === Number(id));
+  const { id }      = useParams();
+  const { user }    = useAuth();
+  const { events }  = useEvents();
+  const navigate    = useNavigate();
+  const event       = events.find((e) => e.id === Number(id));
 
-  const [form,    setForm]    = useState({ name: user?.fullName || "", email: user?.email || "", department: user?.department || "", note: "" });
+  const [form,    setForm]    = useState({ name: user?.fullName || "", email: user?.email || "", department: user?.department || "" });
   const [success, setSuccess] = useState(false);
   const [error,   setError]   = useState("");
 
@@ -58,10 +59,12 @@ export default function EventDetail() {
       </div>
 
       {/* ── Body ── */}
-      <div className="container event-detail__body">
+      <div className="event-detail__body">
+        <div className="container event-detail__body-inner">
 
         {/* Left: info */}
         <div className="event-detail__info">
+          <div className="event-detail__info-card">
 
           {/* Meta grid */}
           <div className="event-detail__meta-grid">
@@ -110,6 +113,7 @@ export default function EventDetail() {
               )}
             </div>
           )}
+          </div>
         </div>
 
         {/* Right: registration form (upcoming only) */}
@@ -145,10 +149,6 @@ export default function EventDetail() {
                     <label>Department *</label>
                     <input name="department" value={form.department} onChange={handleChange} placeholder="e.g. Computer Science" />
                   </div>
-                  <div className="form-group">
-                    <label>Note <span className="form-optional">(optional)</span></label>
-                    <textarea name="note" value={form.note} onChange={handleChange} rows={3} placeholder="Any questions or accessibility needs?" />
-                  </div>
 
                   <button type="submit" className="btn-primary event-detail__submit">
                     Confirm Registration
@@ -165,6 +165,7 @@ export default function EventDetail() {
             </div>
           </div>
         )}
+        </div>
       </div>
 
       <Footer />
