@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import UserMenu from "./Usermenu";
+import SignUp from "../pages/SignUp";
 import "./Navbar.css";
 
 const NAV_LINKS = [
@@ -52,10 +53,13 @@ export default function Navbar() {
       <div className="navbar__right">
         {user ? (
           <UserMenu />
-        ) : (
-          <Link to="/signin" className="navbar__signin">Sign In</Link>
-        )}
-
+        ) : location.pathname === '/signup' ? (
+    <Link to="/signin" className="navbar__signin">Sign In</Link>
+  ) : location.pathname === '/signin' ? (
+    <Link to="/signup" className="navbar__signin">Sign Up</Link>
+  ) : (
+    <Link to="/signin" className="navbar__signin">Sign In</Link>
+  )}
         {/* Hamburger */}
         <button
           className={"navbar__hamburger" + (menuOpen ? " open" : "")}

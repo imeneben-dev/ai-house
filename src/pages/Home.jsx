@@ -1,5 +1,5 @@
 import Hero          from "../components/Hero";
-import StatsBar      from "../components/StatsBar";
+import StatsBar      from "../components/Statsbar";
 import OfferSection  from "../components/Offersection";
 import Partners      from "../components/Partners";
 import Footer        from "../components/Footer";
