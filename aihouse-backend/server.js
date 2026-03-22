@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const app = express();
@@ -70,6 +71,45 @@ app.post('/api/signup', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error during registration." });
+  }
+});
+
+app.post('/api/signin', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email: email });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid email or password." });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid email or password." });
+    }
+
+    const token = jwt.sign(
+      { id: user._id, role: user.role }, 
+      process.env.JWT_SECRET, 
+      { expiresIn: '1d' }
+    );
+
+    res.status(200).json({
+      message: "Sign in successful!",
+      token: token,
+      user: { 
+        id: user._id, 
+        fullName: user.fullName, 
+        email: user.email, 
+        role: user.role 
+      }
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error during sign in." });
   }
 });
 

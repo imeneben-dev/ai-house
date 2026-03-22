@@ -1,0 +1,10 @@
+participant :
+--------------
+email : abdellah.test@univ-blida.dz
+pass : SecurePassword123!
+
+
+AI representative :
+--------------------
+email : abdou.test@univ-blida.dz
+pass : SecurePassword123!

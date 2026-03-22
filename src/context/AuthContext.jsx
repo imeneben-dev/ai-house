@@ -1,6 +1,6 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 
-const AuthContext = createContext(null);
+const AuthContext = createContext();
 
 // Fake users for demo — replace with real API calls later
 const MOCK_USERS = [
@@ -11,12 +11,16 @@ const MOCK_USERS = [
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null); // null = logged out
 
-  const signIn = (email, password) => {
-    const found = MOCK_USERS.find(
-      (u) => u.email === email && u.password === password
-    );
-    if (found) { setUser(found); return { success: true }; }
-    return { success: false, error: "Invalid email or password." };
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      setUser(JSON.parse(savedUser)); 
+    }
+  }, []);
+  const signIn = (userData, token) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(userData));
+    setUser(userData);
   };
 
   const signUp = ({ fullName, email, department, password, role }) => {
@@ -26,7 +30,12 @@ export function AuthProvider({ children }) {
     return { success: true };
   };
 
-  const signOut = () => setUser(null);
+  const signOut = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    
+    setUser(null); 
+  };
 
   return (
     <AuthContext.Provider value={{ user, signIn, signUp, signOut }}>

@@ -18,10 +18,33 @@ export default function SignIn() {
     setError("");
     if (!form.email || !form.password) { setError("Please fill in all fields."); return; }
     setLoading(true);
-    const result = signIn(form.email, form.password);
-    setLoading(false);
-    if (result.success) navigate("/");
-    else setError(result.error);
+    try {
+      const response = await fetch("http://localhost:5000/api/signin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: form.email,
+          password: form.password
+        }),
+      });
+
+      const data = await response.json();
+
+      setLoading(false);
+
+      if (response.ok) {
+        signIn(data.user, data.token);
+        navigate("/");
+      } else {
+        setError(data.message);
+      }
+
+    } catch (err) {
+      setLoading(false);
+      setError("Failed to connect to the server. Please try again later.");
+    }
   };
 
   return (
