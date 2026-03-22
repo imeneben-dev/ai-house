@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
 const app = express();
@@ -41,7 +42,38 @@ app.put('/api/stats', async (req, res) => {
   }
 });
 
-const MONGO_URI = "mongodb+srv://abdellahben965_db_user:ai_house123@cluster0.vgehfjl.mongodb.net/?appName=Cluster0";
+const User = require('./models/User');
+
+app.post('/api/signup', async (req, res) => {
+  try {
+    const { fullName, email, department, password, role } = req.body;
+    const existingUser = await User.findOne({ email: email });
+    if (existingUser) {
+      return res.status(400).json({ 
+  alertText: "Oops! Someone is already using that email.",
+  fix: "Try logging in instead!"
+});
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = await User.create({
+      fullName: fullName,
+      email: email,
+      department: department,
+      password: hashedPassword,
+      role: role
+    });
+
+    res.status(201).json({ message: "Account created successfully!" });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error during registration." });
+  }
+});
+
+const MONGO_URI = "mongodb+srv://abdellahben965_db_user:aihouse123@cluster0.vgehfjl.mongodb.net/?appName=Cluster0";
 
 mongoose.connect(MONGO_URI)
   .then(() => console.log(" Connected to MongoDB Atlas!"))

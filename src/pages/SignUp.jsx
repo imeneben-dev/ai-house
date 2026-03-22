@@ -15,7 +15,7 @@ export default function SignUp() {
 
   const handleChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     if (!form.fullName || !form.email || !form.department || !form.password) {
@@ -24,8 +24,32 @@ export default function SignUp() {
     if (form.password !== form.confirmPassword) {
       setError("Passwords do not match."); return;
     }
-    signUp(form);
-    navigate("/");
+    try {
+      const response = await fetch("http://localhost:5000/api/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fullName: form.fullName,
+          email: form.email,
+          department: form.department,
+          password: form.password,
+          role: form.role
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        navigate("/");
+      } else {
+        setError(data.alertText + " " + data.fix);
+      }
+
+    } catch (err) {
+      setError("Failed to connect to the server. Please try again later.");
+    }
   };
 
   return (
