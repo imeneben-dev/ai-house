@@ -34,7 +34,16 @@ export default function UserMenu() {
     <div className="usermenu" ref={menuRef}>
       {/* Trigger */}
       <button className="usermenu__trigger" onClick={() => setOpen(!open)}>
-        <div className="usermenu__avatar">{initials}</div>
+        {user.profilePicture ? (
+          <img 
+            src={user.profilePicture} 
+            alt="Profile" 
+            className="usermenu__avatar" 
+            style={{ objectFit: "cover" }} 
+          />
+        ) : (
+          <div className="usermenu__avatar">{initials}</div>
+        )}
         <span className="usermenu__name">{user.fullName.split(" ")[0]}</span>
         <svg className={"usermenu__caret" + (open ? " open" : "")} width="12" height="12" viewBox="0 0 12 12">
           <path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -46,7 +55,16 @@ export default function UserMenu() {
         <div className="usermenu__dropdown">
           {/* User info row */}
           <div className="usermenu__info">
-            <div className="usermenu__avatar usermenu__avatar--lg">{initials}</div>
+            {user.profilePicture ? (
+              <img 
+                src={user.profilePicture} 
+                alt="Profile" 
+                className="usermenu__avatar usermenu__avatar--lg" 
+                style={{ objectFit: "cover" }} 
+              />
+            ) : (
+              <div className="usermenu__avatar usermenu__avatar--lg">{initials}</div>
+            )}
             <div>
               <div className="usermenu__fullname">{user.fullName}</div>
               <div className="usermenu__role">

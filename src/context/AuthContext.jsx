@@ -9,14 +9,11 @@ const MOCK_USERS = [
 ];
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null); // null = logged out
 
-  useEffect(() => {
+  const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser)); 
-    }
-  }, []);
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
   const signIn = (userData, token) => {
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(userData));

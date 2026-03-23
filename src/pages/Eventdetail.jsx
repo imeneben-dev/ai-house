@@ -1,19 +1,23 @@
 import { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { EVENTS } from "../data/mockData";
+import { useAuth }   from "../context/AuthContext";
+import { useEvents } from "../context/EventsContext";
 import Footer from "../components/Footer";
-import "./Eventdetail.css";
+import "./EventDetail.css";
 
 export default function EventDetail() {
-  const { id }    = useParams();
-  const { user }  = useAuth();
-  const navigate  = useNavigate();
-  const event     = EVENTS.find((e) => e.id === Number(id));
+  const { id }      = useParams();
+  const { user }    = useAuth();
+  const { events, updateEvent } = useEvents();
+  const navigate    = useNavigate();
+  const event       = events.find((e) => String(e.id) === String(id));
 
-  const [form,    setForm]    = useState({ name: user?.fullName || "", email: user?.email || "", department: user?.department || "", note: "" });
+  const [form,    setForm]    = useState({ name: user?.fullName || "", email: user?.email || "", department: user?.department || "" });
   const [success, setSuccess] = useState(false);
   const [error,   setError]   = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const seatsLeft = event?.seats - (event?.attendees ? event.attendees.length : 0);
 
   if (!event) return (
     <div className="page event-detail__not-found">
@@ -28,15 +32,51 @@ export default function EventDetail() {
 
   const handleChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!user) {
+      navigate("/signin");
+      return;
+    }
+
     if (!form.name || !form.email || !form.department) {
       setError("Please fill in all required fields.");
       return;
     }
-    // Real app: POST /api/registrations
-    setSuccess(true);
+
+    setLoading(true);
     setError("");
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`http://localhost:5000/api/events/${event.id}/register`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          department: form.department
+        })
+      });
+
+      const data = await response.json();
+      setLoading(false);
+
+      if (response.ok) {
+        setSuccess(true); 
+        updateEvent(data.event); 
+      } else {
+        setError(data.message);
+      }
+    } catch (err) {
+      setLoading(false);
+      setError("Failed to connect to the server. Please try again.");
+    }
   };
 
   return (
@@ -58,10 +98,12 @@ export default function EventDetail() {
       </div>
 
       {/* ── Body ── */}
-      <div className="container event-detail__body">
+      <div className="event-detail__body">
+        <div className="container event-detail__body-inner">
 
         {/* Left: info */}
         <div className="event-detail__info">
+          <div className="event-detail__info-card">
 
           {/* Meta grid */}
           <div className="event-detail__meta-grid">
@@ -69,7 +111,7 @@ export default function EventDetail() {
               { icon: "📅", label: "Date", value: formatted },
               { icon: "🕐", label: "Time", value: event.time },
               { icon: event.mode === "Webinar" ? "💻" : "📍", label: "Location", value: event.location },
-              { icon: "👥", label: "Seats", value: `${event.seats} participants` },
+              { icon: "👥", label: "Seats Left", value: seatsLeft > 0 ? `${seatsLeft} available` : "Sold Out!" },
               { icon: "🏛️", label: "Department", value: event.department },
               { icon: "🏷️", label: "Topic", value: event.topic },
             ].map(({ icon, label, value }) => (
@@ -110,6 +152,7 @@ export default function EventDetail() {
               )}
             </div>
           )}
+          </div>
         </div>
 
         {/* Right: registration form (upcoming only) */}
@@ -145,13 +188,9 @@ export default function EventDetail() {
                     <label>Department *</label>
                     <input name="department" value={form.department} onChange={handleChange} placeholder="e.g. Computer Science" />
                   </div>
-                  <div className="form-group">
-                    <label>Note <span className="form-optional">(optional)</span></label>
-                    <textarea name="note" value={form.note} onChange={handleChange} rows={3} placeholder="Any questions or accessibility needs?" />
-                  </div>
 
-                  <button type="submit" className="btn-primary event-detail__submit">
-                    Confirm Registration
+                  <button type="submit" className="btn-primary event-detail__submit" disabled={loading}>
+                    {loading ? "Registering..." : "Confirm Registration"}
                   </button>
 
                   {!user && (
@@ -165,6 +204,7 @@ export default function EventDetail() {
             </div>
           </div>
         )}
+        </div>
       </div>
 
       <Footer />

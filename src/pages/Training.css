@@ -1,38 +1,39 @@
 .training-page__header {
   background: var(--blue);
-  padding: 3.5rem 0 2.5rem;
+  padding: 2.5rem 0 3rem;
   font-family: var(--font);
 }
 .training-page__title {
-  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+  font-size: clamp(1.4rem, 2.5vw, 1.9rem);
   font-weight: 800;
   color: #fff;
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.5rem;
 }
 .training-page__header .section-tag { color: rgba(255,255,255,0.7); }
 .training-page__sub {
-  font-size: 1rem;
+  font-size: 0.92rem;
   color: rgba(255,255,255,0.72);
-  max-width: 520px;
-  line-height: 1.7;
+  max-width: 480px;
+  line-height: 1.65;
 }
 
 .training-page__body {
-  padding-top: 2.5rem;
-  padding-bottom: 4rem;
+  padding-top: 3.5rem;
+  padding-bottom: 5rem;
 }
 
 .training-page__count {
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--text-muted);
-  margin: 1.4rem 0 1rem;
+  margin: 1.6rem 0 1.2rem;
 }
 
 .training-page__grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.2rem;
+  gap: 1.4rem;
+  margin-bottom: 4rem;
 }
 
 .training-page__empty {
@@ -44,5 +45,6 @@
   color: var(--text-muted);
   font-size: 1rem;
   text-align: center;
+  margin-bottom: 4rem;
 }
 .training-page__empty span { font-size: 2.5rem; }

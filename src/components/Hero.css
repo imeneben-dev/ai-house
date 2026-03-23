@@ -4,7 +4,7 @@
   display: flex;
   align-items: center;
   gap: 2rem;
-  padding: 0 2.5rem;
+  padding: 100px 2.5rem 4rem;
   background: linear-gradient(145deg, #001233 0%, #003080 60%, #001a50 100%);
   overflow: hidden;
 }
@@ -111,7 +111,7 @@
   .hero {
     flex-direction: column;
     justify-content: center;
-    padding: 6rem 1.5rem 3rem;
+    padding: 100px 1.5rem 3rem;
     text-align: center;
     min-height: 100svh;
   }

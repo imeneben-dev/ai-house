@@ -3,12 +3,13 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const verifyToken = require('./middleware/auth');
 require('dotenv').config();
 
 const app = express();
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 const Stat = require('./models/Stat');
 
@@ -44,6 +45,7 @@ app.put('/api/stats', async (req, res) => {
 });
 
 const User = require('./models/User');
+const Event = require('./models/Event');
 
 app.post('/api/signup', async (req, res) => {
   try {
@@ -103,13 +105,313 @@ app.post('/api/signin', async (req, res) => {
         id: user._id, 
         fullName: user.fullName, 
         email: user.email, 
-        role: user.role 
+        role: user.role,
+        department: user.department
       }
     });
 
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error during sign in." });
+  }
+});
+
+app.put('/api/user/profile', verifyToken, async (req, res) => {
+  try {
+    const { fullName, email } = req.body;
+
+    const userId = req.user.id;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    if (email !== user.email) {
+      const emailExists = await User.findOne({ email: email });
+      if (emailExists) {
+        return res.status(400).json({ message: "That email is already in use by another account." });
+      }
+    }
+
+    user.fullName = fullName;
+    user.email = email;
+
+    await user.save();
+
+    res.status(200).json({
+      message: "Profile updated successfully!",
+      user: {
+        id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        department: user.department
+      }
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error updating profile." });
+  }
+});
+
+app.put('/api/user/password', verifyToken, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    const userId = req.user.id;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({ message: "Incorrect current password." });
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    user.password = hashedNewPassword;
+
+    await user.save();
+
+    res.status(200).json({ message: "Password updated successfully!" });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error changing password." });
+  }
+});
+
+app.put('/api/user/notifications', verifyToken, async (req, res) => {
+  try {
+    const { newEvent, registration, reminders, repUpdates, newsletter } = req.body;
+
+    const userId = req.user.id;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    user.notifications = {
+      newEvent: newEvent,
+      registration: registration,
+      reminders: reminders,
+      repUpdates: repUpdates,
+      newsletter: newsletter
+    };
+
+    await user.save();
+
+    res.status(200).json({ 
+      message: "Preferences updated successfully!",
+      user: {
+        id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        department: user.department,
+        notifications: user.notifications
+      }
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error updating notifications." });
+  }
+});
+
+app.put('/api/user/avatar', verifyToken, async (req, res) => {
+  try {
+    const { profilePicture } = req.body;
+
+    const userId = req.user.id;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    user.profilePicture = profilePicture;
+    await user.save();
+
+    res.status(200).json({ 
+      message: "Profile picture updated successfully!",
+      user: {
+        id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        department: user.department,
+        notifications: user.notifications,
+        profilePicture: user.profilePicture
+      }
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error updating profile picture." });
+  }
+});
+
+app.get('/api/events', async (req, res) => {
+  try {
+    let events = await Event.find();
+
+    const now = new Date();
+
+    for (let event of events) {
+      const eventDateTime = new Date(`${event.date}T${event.time}`);
+
+      if (eventDateTime < now && event.status !== 'past') {
+        event.status = 'past';
+
+        event.resources = [
+          {
+            name: "Presentation Deck.pdf",
+            url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" 
+          },
+          {
+            name: "Training Dataset.json",
+            url: "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ 
+              dataset_name: event.title, 
+              records: 1500, 
+              status: "Cleaned and ready for Machine Learning" 
+            }, null, 2))
+          }
+        ];
+        
+        await event.save(); 
+      }
+    }
+
+    events = await Event.find().lean();
+
+    const formattedEvents = events.map(event => ({
+      ...event,
+      id: event._id.toString()
+    }));
+
+    res.status(200).json(formattedEvents);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error fetching events." });
+  }
+});
+
+app.post('/api/events', verifyToken, async (req, res) => {
+  try {
+    if (req.user.role !== 'representative') {
+      return res.status(403).json({ message: "Access Denied. Only Representatives can create events." });
+    }
+
+    const { 
+      title, type, topic, audience, department, 
+      date, time, location, mode, seats, desc, instructor 
+    } = req.body;
+
+    const newEvent = await Event.create({
+      title: title,
+      type: type,
+      topic: topic,
+      audience: audience,
+      department: department,
+      date: date,
+      time: time,
+      location: location,
+      mode: mode,
+      seats: seats,
+      desc: desc,
+      instructor: instructor,
+      status: 'upcoming',
+      resources: []
+    });
+
+    const formattedNewEvent = {
+      ...newEvent.toObject(),
+      id: newEvent._id.toString() 
+    };
+
+    res.status(201).json(newEvent);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error creating event." });
+  }
+});
+
+app.post('/api/events/:id/register', verifyToken, async (req, res) => {
+  try {
+    const eventId = req.params.id;
+
+    const userId = req.user.id;
+
+    const { name, email, department } = req.body;
+
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ message: "Event not found." });
+    }
+
+    const alreadyRegistered = event.attendees.find(attendee => attendee.userId === userId);
+    if (alreadyRegistered) {
+      return res.status(400).json({ message: "You are already registered for this event!" });
+    }
+
+    if (event.attendees.length >= event.seats) {
+      return res.status(400).json({ message: "Sorry, this event is completely full." });
+    }
+
+    event.attendees.push({
+      userId: userId,
+      name: name,
+      email: email,
+      department: department
+    });
+
+    await event.save();
+
+    const formattedEvent = {
+      ...event.toObject(),
+      id: event._id.toString()
+    };
+
+    res.status(200).json({ 
+      message: "Registration successful!", 
+      event: formattedEvent 
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error during registration." });
+  }
+});
+
+app.get('/api/representatives', async (req, res) => {
+  try {
+    const reps = await User.find({ role: 'representative' }).select('-password').lean();
+
+    const formattedReps = reps.map(rep => ({
+      ...rep,
+      id: rep._id.toString(),
+      title: rep.title || "Faculty Member",
+      focus: rep.focus || "AI Applications",
+      bio: rep.bio || "Dedicated to advancing AI literacy and research within the department.",
+      isCertified: rep.isCertified || false
+    }));
+
+    res.status(200).json(formattedReps);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error fetching representatives." });
   }
 });
 

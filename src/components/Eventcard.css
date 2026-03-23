@@ -1,11 +1,13 @@
 .event-card {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
   gap: 0.65rem;
   background: var(--white);
   border: 1.5px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 1.4rem 1.5rem;
+  padding: 1.6rem 1.5rem;
   text-decoration: none;
   color: inherit;
   transition: transform 0.22s, border-color 0.22s, box-shadow 0.22s;
@@ -22,8 +24,10 @@
 /* top row */
 .event-card__top {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 .event-card__type {
   font-size: 0.7rem;
@@ -59,7 +63,12 @@
 }
 
 /* tags */
-.event-card__tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.event-card__tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
 .event-card__tag {
   font-size: 0.7rem;
   font-weight: 600;
@@ -70,10 +79,18 @@
 }
 
 /* meta */
-.event-card__meta { display: flex; flex-direction: column; gap: 5px; margin-top: 4px; }
+.event-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 4px;
+  align-items: center;
+  width: 100%;
+}
 .event-card__meta-row {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   font-size: 0.8rem;
   color: var(--text-muted);
