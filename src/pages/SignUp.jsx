@@ -8,9 +8,10 @@ export default function SignUp() {
   const { signUp } = useAuth();
   const navigate   = useNavigate();
 
-  const [form,  setForm]  = useState({
-    fullName: "", email: "", department: "", password: "", confirmPassword: "", role: "participant",
-  });
+  const [form, setForm] = useState({
+  fullName: "", email: "", department: "", password: "", role: "participant",
+  title: "", focus: "", bio: ""
+});
   const [error, setError] = useState("");
 
   const handleChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
@@ -35,7 +36,10 @@ export default function SignUp() {
           email: form.email,
           department: form.department,
           password: form.password,
-          role: form.role
+          role: form.role,
+          title: form.title,
+          focus: form.focus,
+          bio: form.bio
         }),
       });
 
@@ -101,14 +105,17 @@ export default function SignUp() {
         {error && <div className="auth-error">{error}</div>}
 
         <form className="auth-form auth-form--grid" onSubmit={handleSubmit}>
+          
           <div className="form-group">
             <label>Full Name *</label>
             <input name="fullName" value={form.fullName} onChange={handleChange} placeholder="e.g. Dr. Amira Benali" />
           </div>
+          
           <div className="form-group">
             <label>Email *</label>
             <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="your@email.com" />
           </div>
+          
           <div className="form-group">
             <label>Department *</label>
             <select name="department" value={form.department} onChange={handleChange}>
@@ -116,20 +123,49 @@ export default function SignUp() {
               {DEPARTMENTS.map((d) => <option key={d} value={d}>{d}</option>)}
             </select>
           </div>
-          <div className="form-group" />
+
+          {form.role === "representative" ? (
+            <>
+              <div className="form-group">
+                <label>Job Title</label>
+                <input name="title" value={form.title} onChange={handleChange} placeholder="e.g. Associate Professor" />
+              </div>
+              <div className="form-group">
+                <label>AI Focus Area</label>
+                <input name="focus" value={form.focus} onChange={handleChange} placeholder="e.g. Machine Learning" />
+              </div>
+              <div className="form-group form-group--full">
+                <label>Short Bio</label>
+                <textarea 
+                  name="bio" 
+                  value={form.bio} 
+                  onChange={handleChange} 
+                  rows="3" 
+                  placeholder="Tell us about your background..." 
+                  style={{ padding: "10px", borderRadius: "8px", border: "1.5px solid var(--border)", fontFamily: "inherit" }}
+                />
+              </div>
+            </>
+          ) : (
+            <div className="form-group" />
+          )}
+
           <div className="form-group">
             <label>Password *</label>
             <input name="password" type="password" value={form.password} onChange={handleChange} placeholder="••••••••" />
           </div>
+          
           <div className="form-group">
             <label>Confirm Password *</label>
             <input name="confirmPassword" type="password" value={form.confirmPassword} onChange={handleChange} placeholder="••••••••" />
           </div>
+          
           <div className="form-group form-group--full">
             <button type="submit" className="btn-primary auth-submit">
               Create Account
             </button>
           </div>
+
         </form>
 
         <p className="auth-switch">

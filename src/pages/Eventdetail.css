@@ -253,3 +253,48 @@
   .event-detail__body { padding-bottom: 4rem; }
   .event-detail__register-card { position: static; }
 }
+
+.instructor-controls {
+  margin-bottom: 1.5rem;
+  padding: 1.2rem;
+  background: var(--blue-light);
+  border-radius: var(--radius-sm);
+  border: 1.5px dashed var(--blue);
+}
+
+.instructor-controls__title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--blue);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.instructor-controls__actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+
+.instructor-upload-btn input[type="file"] {
+  display: none; 
+}
+
+.instructor-upload-btn.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.instructor-upload-loading {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--blue);
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

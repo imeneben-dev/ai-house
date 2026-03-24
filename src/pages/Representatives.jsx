@@ -2,26 +2,22 @@ import { useState, useMemo, useEffect } from "react";
 import SearchFilterBar from "../components/Searchfilterbar";
 import RepCard         from "../components/Repcard";
 import Footer          from "../components/Footer";
-// 1. We removed REPS from the mockData import because we are getting real data now!
 import { DEPARTMENTS } from "../data/mockData"; 
 import "./Representatives.css";
 
 export default function Representatives() {
-  // 2. We create states to hold the real data and a loading spinner
   const [reps, setReps] = useState([]);
   const [loading, setLoading] = useState(true);
   
   const [search,  setSearch]  = useState("");
   const [filters, setFilters] = useState({ department: "" });
 
-  // 3. Fetch the real representatives exactly ONCE when the page opens
   useEffect(() => {
     const fetchRepresentatives = async () => {
       try {
         const response = await fetch("http://localhost:5000/api/representatives");
         const data = await response.json();
-        
-        // Save the real people to our state!
+
         setReps(data);
         setLoading(false);
       } catch (error) {
@@ -35,11 +31,9 @@ export default function Representatives() {
 
   const onFilter = (key, value) => setFilters((p) => ({ ...p, [key]: value }));
 
-  // 4. Update the search math to filter our real 'reps' array instead of the fake mock array!
   const results = useMemo(() => {
     return reps.filter((r) => {
       const q = search.toLowerCase();
-      // Added safety check (r.focus || "") in case focus is accidentally missing
       if (q && !r.fullName.toLowerCase().includes(q) && !(r.focus || "").toLowerCase().includes(q)) return false;
       if (filters.department && r.department !== filters.department) return false;
       return true;

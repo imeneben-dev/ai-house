@@ -1,5 +1,10 @@
-/* ── Page shell ── */
-.settings-page { background: var(--off-white); min-height: 100vh; font-family: var(--font); }
+.settings-page { 
+  background: var(--off-white); 
+  min-height: 100vh; 
+  font-family: var(--font); 
+  display: flex;
+  flex-direction: column;
+}
 
 .settings-page__header {
   background: var(--blue);
@@ -20,6 +25,8 @@
   padding-top: 3.5rem;
   padding-bottom: 7rem;
   align-items: start;
+  flex: 1; 
+  width: 100%;
 }
 
 /* ── Sidebar ── */

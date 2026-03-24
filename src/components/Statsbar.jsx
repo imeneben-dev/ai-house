@@ -9,8 +9,13 @@ function StatCell({ num, suffix, label }) {
   const started = useRef(false);
 
   useEffect(() => {
+    started.current = false; 
+
     const obs = new IntersectionObserver(([e]) => {
       if (e.isIntersecting && !started.current) {
+
+        if (num === 0) return; 
+
         started.current = true;
         const dur = 1400, t0 = performance.now();
         const tick = (now) => {
@@ -22,9 +27,11 @@ function StatCell({ num, suffix, label }) {
         requestAnimationFrame(tick);
       }
     }, { threshold: 0.4 });
+    
     if (ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
-  }, [num]);
+
+  }, [num]); 
 
   return (
     <div className="stats__cell" ref={ref}>

@@ -9,7 +9,15 @@ const TABS = ["Profile", "Personal Info", "Security", "Notifications"];
 export default function Settings() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("Profile");
+  const [activeTab, setActiveTab] = useState(() => {
+    const savedTab = localStorage.getItem("activeSettingsTab");
+    return savedTab ? savedTab : "Profile";
+  });
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    localStorage.setItem("activeSettingsTab", tab);
+  };
 
   if (!user) {
     navigate("/signin");
@@ -32,7 +40,7 @@ export default function Settings() {
             <button
               key={tab}
               className={"settings-tab" + (activeTab === tab ? " settings-tab--active" : "")}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => handleTabChange(tab)}
             >
               <span className="settings-tab__icon">{TAB_ICONS[tab]}</span>
               {tab}
@@ -122,14 +130,13 @@ function ProfileTab({ user }) {
   };
 
   const handleRemove = async () => {
-    setPreview(null); // 1. Erase it from the screen instantly
+    setPreview(null);
     setLoading(true);
     setError("");
 
     try {
       const token = localStorage.getItem("token");
 
-      // 2. Tell the backend to replace the image with an empty string
       const response = await fetch("http://localhost:5000/api/user/avatar", {
         method: "PUT",
         headers: {
@@ -137,7 +144,7 @@ function ProfileTab({ user }) {
           "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({
-          profilePicture: "" // This tells MongoDB to delete the picture!
+          profilePicture: ""
         }),
       });
 
@@ -146,7 +153,6 @@ function ProfileTab({ user }) {
 
       if (response.ok) {
         setSaved(true);
-        // 3. Update the global walkie-talkie so the Navbar knows it's gone
         signIn(data.user, token);
       } else {
         setError(data.message);
@@ -205,7 +211,7 @@ function ProfileTab({ user }) {
 /* ── Personal Info Tab ───────────────────────────────────── */
 function PersonalInfoTab({ user }) {
   const { signIn } = useAuth();
-  const [form, setForm] = useState({ fullName: user.fullName, email: user.email });
+  const [form, setForm] = useState({ fullName: user.fullName, email: user.email, title: user.title || "", focus: user.focus || "", bio: user.bio || "" });
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -231,9 +237,12 @@ function PersonalInfoTab({ user }) {
           "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({
-          fullName: form.fullName,
-          email: form.email
-        }),
+  fullName: form.fullName,
+  email: form.email,
+  title: form.title,
+  focus: form.focus,
+  bio: form.bio
+}),
       });
 
       const data = await response.json();
@@ -266,6 +275,23 @@ function PersonalInfoTab({ user }) {
           <label>Email</label>
           <input name="email" type="email" value={form.email} onChange={handleChange} />
         </div>
+
+        {user.role === "representative" && (
+  <>
+    <div className="form-group">
+      <label>Job Title</label>
+      <input name="title" value={form.title} onChange={handleChange} />
+    </div>
+    <div className="form-group">
+      <label>AI Focus Area</label>
+      <input name="focus" value={form.focus} onChange={handleChange} />
+    </div>
+    <div className="form-group">
+      <label>Biography</label>
+      <textarea name="bio" value={form.bio} onChange={handleChange} rows="3" style={{ padding: "10px", borderRadius: "8px", border: "1.5px solid var(--border)", fontFamily: "inherit" }} />
+    </div>
+  </>
+)}
 
         {/* Read-only fields */}
         <div className="form-group">

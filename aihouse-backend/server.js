@@ -9,7 +9,7 @@ require('dotenv').config();
 const app = express();
 
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '50mb' }));
 
 const Stat = require('./models/Stat');
 
@@ -49,7 +49,7 @@ const Event = require('./models/Event');
 
 app.post('/api/signup', async (req, res) => {
   try {
-    const { fullName, email, department, password, role } = req.body;
+    const { fullName, email, department, password, role, title, focus, bio } = req.body;
     const existingUser = await User.findOne({ email: email });
     if (existingUser) {
       return res.status(400).json({ 
@@ -61,12 +61,15 @@ app.post('/api/signup', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await User.create({
-      fullName: fullName,
-      email: email,
-      department: department,
-      password: hashedPassword,
-      role: role
-    });
+  fullName: fullName,
+  email: email,
+  department: department,
+  password: hashedPassword,
+  role: role,
+  title: title || "Faculty Member",
+  focus: focus || "AI Applications",
+  bio: bio || "Dedicated to advancing AI literacy and research."
+});
 
     res.status(201).json({ message: "Account created successfully!" });
 
@@ -106,7 +109,12 @@ app.post('/api/signin', async (req, res) => {
         fullName: user.fullName, 
         email: user.email, 
         role: user.role,
-        department: user.department
+        department: user.department,
+        title: user.title,
+        focus: user.focus,
+        bio: user.bio,
+        profilePicture: user.profilePicture,
+        notifications: user.notifications
       }
     });
 
@@ -137,6 +145,12 @@ app.put('/api/user/profile', verifyToken, async (req, res) => {
     user.fullName = fullName;
     user.email = email;
 
+    if (user.role === 'representative') {
+      if (req.body.title !== undefined) user.title = req.body.title;
+      if (req.body.focus !== undefined) user.focus = req.body.focus;
+      if (req.body.bio !== undefined) user.bio = req.body.bio;
+    }
+    
     await user.save();
 
     res.status(200).json({
@@ -146,7 +160,12 @@ app.put('/api/user/profile', verifyToken, async (req, res) => {
         fullName: user.fullName,
         email: user.email,
         role: user.role,
-        department: user.department
+        department: user.department,
+        title: user.title,
+        focus: user.focus,
+        bio: user.bio,
+        profilePicture: user.profilePicture,
+        notifications: user.notifications
       }
     });
 
@@ -217,6 +236,10 @@ app.put('/api/user/notifications', verifyToken, async (req, res) => {
         email: user.email,
         role: user.role,
         department: user.department,
+        title: user.title,                  
+        focus: user.focus,                  
+        bio: user.bio,                      
+        profilePicture: user.profilePicture,
         notifications: user.notifications
       }
     });
@@ -249,8 +272,11 @@ app.put('/api/user/avatar', verifyToken, async (req, res) => {
         email: user.email,
         role: user.role,
         department: user.department,
-        notifications: user.notifications,
-        profilePicture: user.profilePicture
+        title: user.title,                  
+        focus: user.focus,                  
+        bio: user.bio,                      
+        profilePicture: user.profilePicture,
+        notifications: user.notifications
       }
     });
 
@@ -271,21 +297,6 @@ app.get('/api/events', async (req, res) => {
 
       if (eventDateTime < now && event.status !== 'past') {
         event.status = 'past';
-
-        event.resources = [
-          {
-            name: "Presentation Deck.pdf",
-            url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" 
-          },
-          {
-            name: "Training Dataset.json",
-            url: "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ 
-              dataset_name: event.title, 
-              records: 1500, 
-              status: "Cleaned and ready for Machine Learning" 
-            }, null, 2))
-          }
-        ];
         
         await event.save(); 
       }
@@ -412,6 +423,30 @@ app.get('/api/representatives', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error fetching representatives." });
+  }
+});
+
+app.put('/api/events/:id/resources', verifyToken, async (req, res) => {
+  try {
+    const { resources } = req.body;
+    const event = await Event.findById(req.params.id);
+    
+    if (!event) return res.status(404).json({ message: "Event not found." });
+
+    const user = await User.findById(req.user.id);
+    if (event.instructor !== user.fullName) {
+      return res.status(403).json({ message: "Only the instructor can upload resources." });
+    }
+
+    event.resources = resources;
+    await event.save();
+
+    const formattedEvent = { ...event.toObject(), id: event._id.toString() };
+    res.status(200).json({ message: "Files uploaded!", event: formattedEvent });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error uploading files." });
   }
 });
 

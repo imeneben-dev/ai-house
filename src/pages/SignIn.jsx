@@ -84,8 +84,10 @@ export default function SignIn() {
         {/* Demo hint */}
         <div className="auth-demo">
           <strong>Demo credentials:</strong><br />
-          Rep: amira@univ-blida.dz · 1234<br />
-          Participant: yacine@univ-blida.dz · 1234
+          Rep1: abdou.test@univ-blida.dz<br />
+          Rep2: abde.test@univ-blida.dz<br />
+          Participant: abdellah.test@univ-blida.dz<br />
+          Password : SecurePassword123!
         </div>
 
         <p className="auth-switch">

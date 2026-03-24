@@ -8,7 +8,7 @@ import "./EventDetail.css";
 export default function EventDetail() {
   const { id }      = useParams();
   const { user }    = useAuth();
-  const { events, updateEvent } = useEvents();
+  const { events, updateEvent } = useEvents(); 
   const navigate    = useNavigate();
   const event       = events.find((e) => String(e.id) === String(id));
 
@@ -16,6 +16,38 @@ export default function EventDetail() {
   const [success, setSuccess] = useState(false);
   const [error,   setError]   = useState("");
   const [loading, setLoading] = useState(false);
+
+  const [uploadingFile, setUploadingFile] = useState(false);
+
+  const handleFileUpload = async (e, fileName) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingFile(true);
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const base64String = ev.target.result;
+
+      const updatedResources = event.resources.filter(r => r.name !== fileName);
+      updatedResources.push({ name: fileName, url: base64String });
+
+      try {
+        const token = localStorage.getItem("token");
+        const response = await fetch(`http://localhost:5000/api/events/${event.id}/resources`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+          body: JSON.stringify({ resources: updatedResources })
+        });
+
+        const data = await response.json();
+        if (response.ok) updateEvent(data.event); 
+      } catch (err) {
+        console.error("Upload failed.");
+      }
+      setUploadingFile(false);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const seatsLeft = event?.seats - (event?.attendees ? event.attendees.length : 0);
 
@@ -135,10 +167,81 @@ export default function EventDetail() {
           {isPast && (
             <div className="event-detail__section">
               <h2 className="event-detail__section-title">Resources</h2>
-              {event.resources.length > 0 ? (
+
+              {/* --- INSTRUCTOR CONTROL PANEL (Hidden from normal users) --- */}
+              {user?.fullName === event.instructor && (
+                <div 
+                  className="instructor-controls"
+                  style={{ 
+                    /* MAGIC FIX 2: This guarantees a huge space below the buttons, pushing the download links down! */
+                    marginBottom: "2.5rem", 
+                    padding: "1.2rem", 
+                    background: "var(--blue-light)", 
+                    borderRadius: "8px", 
+                    border: "1.5px dashed var(--blue)" 
+                  }}
+                >
+                  <h4 style={{ fontSize: "0.95rem", fontWeight: "800", color: "var(--blue)", marginBottom: "1.2rem", display: "flex", alignItems: "center", gap: "8px" }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 16v-9M12 7l-3 3M12 7l3 3M5 20h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    Instructor Controls: Upload Files
+                  </h4>
+                  
+                  {/* MAGIC FIX 1: 'display: flex' and 'gap' forces a perfect, unbreakable horizontal space between the buttons! */}
+                  <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap" }}>
+                    
+                    <label 
+                      className="btn-primary" 
+                      style={{ 
+                        cursor: uploadingFile ? "not-allowed" : "pointer", 
+                        opacity: uploadingFile ? 0.6 : 1, 
+                        margin: 0
+                      }}
+                    >
+                      Upload Presentation (PDF)
+                      <input 
+                        type="file" 
+                        accept=".pdf" 
+                        onChange={(e) => handleFileUpload(e, "Presentation Deck.pdf")} 
+                        disabled={uploadingFile} 
+                        style={{ display: "none" }} 
+                      />
+                    </label>
+                    
+                    <label 
+                      className="btn-primary" 
+                      style={{ 
+                        cursor: uploadingFile ? "not-allowed" : "pointer", 
+                        opacity: uploadingFile ? 0.6 : 1, 
+                        margin: 0
+                      }}
+                    >
+                      Upload Dataset (JSON)
+                      <input 
+                        type="file" 
+                        accept=".json" 
+                        onChange={(e) => handleFileUpload(e, "Training Dataset.json")} 
+                        disabled={uploadingFile} 
+                        style={{ display: "none" }} 
+                      />
+                    </label>
+
+                  </div>
+
+                  {uploadingFile && (
+                    <div style={{ fontSize: "0.85rem", fontWeight: "600", color: "var(--blue)", marginTop: "1rem", display: "flex", alignItems: "center", gap: "8px" }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                      Uploading to database... please wait.
+                    </div>
+                  )}
+                </div>
+              )}
+              {/* ----------------------------------------------------------- */}
+
+              {/* Display the buttons ONLY if files exist. */}
+              {event.resources && event.resources.length > 0 ? (
                 <div className="event-detail__resources">
                   {event.resources.map((r) => (
-                    <a key={r.name} href={r.url} className="event-detail__resource-item" download>
+                    <a key={r.name} href={r.url} className="event-detail__resource-item" download={r.name}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                         <path d="M12 3v13M7 11l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                         <path d="M5 21h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
