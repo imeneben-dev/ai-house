@@ -20,8 +20,12 @@ export default function SignIn() {
     setLoading(true);
     const result = signIn(form.email, form.password);
     setLoading(false);
-    if (result.success) navigate("/");
-    else setError(result.error);
+    if (result.success) {
+      if (result.role === "admin") navigate("/admin");
+      else navigate("/");
+    } else {
+      setError(result.error);
+    }
   };
 
   return (
@@ -61,6 +65,7 @@ export default function SignIn() {
         {/* Demo hint */}
         <div className="auth-demo">
           <strong>Demo credentials:</strong><br />
+          Admin: admin@univ-blida.dz · admin123<br />
           Rep: amira@univ-blida.dz · 1234<br />
           Participant: yacine@univ-blida.dz · 1234
         </div>

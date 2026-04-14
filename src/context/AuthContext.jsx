@@ -6,6 +6,7 @@ const AuthContext = createContext(null);
 const MOCK_USERS = [
   { id: 1, fullName: "Dr. Amira Benali",  email: "amira@univ-blida.dz",  department: "Computer Science", role: "representative", password: "1234" },
   { id: 2, fullName: "Yacine Meziani",    email: "yacine@univ-blida.dz", department: "Biology",          role: "participant",    password: "1234" },
+  { id: 3, fullName: "Admin",             email: "admin@univ-blida.dz",  department: "Administration",   role: "admin",          password: "admin123" },
 ];
 
 export function AuthProvider({ children }) {
@@ -15,7 +16,7 @@ export function AuthProvider({ children }) {
     const found = MOCK_USERS.find(
       (u) => u.email === email && u.password === password
     );
-    if (found) { setUser(found); return { success: true }; }
+    if (found) { setUser(found); return { success: true, role: found.role }; }
     return { success: false, error: "Invalid email or password." };
   };
 
