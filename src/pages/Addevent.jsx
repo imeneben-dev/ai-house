@@ -12,6 +12,14 @@ const AUDIENCE = ["Students", "Representatives", "General Public"];
 
 export default function AddEvent() {
   const { user }    = useAuth();
+  if (user?.role === "representative" && !user.isCertified) {
+    return (
+      <div className="page container" style={{ textAlign: "center", paddingTop: "100px" }}>
+        <h2>Access Denied</h2>
+        <p>Your account is currently Pending. Please upload your Train the Trainer certificate in your Settings and wait for Admin validation before hosting events.</p>
+      </div>
+    );
+  }
   const { addEvent } = useEvents();
   const navigate    = useNavigate();
 

@@ -12,6 +12,10 @@ const userSchema = new mongoose.Schema({
   focus: { type: String, default: "AI Applications" },
   bio: { type: String, default: "Dedicated to advancing AI literacy and research within the department." },
   isCertified: { type: Boolean, default: false },
+  certificateUrl: {
+    type: String,
+    default: ""
+  },
 
   notifications: {
     newEvent: { type: Boolean, default: true },

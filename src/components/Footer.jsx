@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import "./Footer.css";
 
 export default function Footer() {
+  const { user } = useAuth();
   return (
     <footer className="footer">
       <div className="container footer__inner">
@@ -25,10 +27,22 @@ export default function Footer() {
 
         {/* Links */}
         <div className="footer__col">
-          <h4>Navigate</h4>
-          <Link to="/">Home</Link>
-          <Link to="/training">Training Hub</Link>
-          <Link to="/representatives">Representatives</Link>
+          {/* MAGIC FIX 2: Change the title depending on the role */}
+          <h4>{user?.role === "admin" ? "Admin Panel" : "Navigate"}</h4>
+          
+          {/* MAGIC FIX 3: Draw a totally different list for Admins! */}
+          {user?.role === "admin" ? (
+            <ul>
+              <li><Link to="/admin">Dashboard Overview</Link></li>
+              <li><Link to="/settings">Security & Settings</Link></li>
+            </ul>
+          ) : (
+            <ul>
+              <li><Link to="/">Home</Link></li>
+              <li><Link to="/training">Training</Link></li>
+              <li><Link to="/representatives">Representatives</Link></li>
+            </ul>
+          )}
         </div>
 
         <div className="footer__col">

@@ -16,14 +16,19 @@ export default function SignIn() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    if (!form.email || !form.password) { setError("Please fill in all fields."); return; }
+    
+    if (!form.email || !form.password) { 
+      setError("Please fill in all fields."); 
+      return; 
+    }
+    
     setLoading(true);
+    
     try {
+      // 1. Ask the real database if the user exists
       const response = await fetch("http://localhost:5000/api/signin", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: form.email,
           password: form.password
@@ -31,19 +36,25 @@ export default function SignIn() {
       });
 
       const data = await response.json();
-
       setLoading(false);
 
       if (response.ok) {
+        // 2. Database said yes! Put the user in the backpack.
         signIn(data.user, data.token);
-        navigate("/");
+        
+        // 3. MAGIC ROUTING: Send Admins to the dashboard, and everyone else Home!
+        if (data.user.role === "admin") {
+          navigate("/admin");
+        } else {
+          navigate("/");
+        }
       } else {
+        // Database said no (wrong password, etc.)
         setError(data.message);
       }
-
     } catch (err) {
       setLoading(false);
-      setError("Failed to connect to the server. Please try again later.");
+      setError("Failed to connect to the server.");
     }
   };
 
@@ -87,6 +98,7 @@ export default function SignIn() {
           Rep1: abdou.test@univ-blida.dz<br />
           Rep2: abde.test@univ-blida.dz<br />
           Participant: abdellah.test@univ-blida.dz<br />
+          Admin: admin@univ-blida.dz<br />
           Password : SecurePassword123!
         </div>
 

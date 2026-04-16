@@ -145,6 +145,9 @@ app.put('/api/user/profile', verifyToken, async (req, res) => {
     user.fullName = fullName;
     user.email = email;
 
+    user.markModified('fullName');
+    user.markModified('email');
+
     if (user.role === 'representative') {
       if (req.body.title !== undefined) user.title = req.body.title;
       if (req.body.focus !== undefined) user.focus = req.body.focus;
@@ -283,6 +286,33 @@ app.put('/api/user/avatar', verifyToken, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error updating profile picture." });
+  }
+});
+
+app.get('/api/user/me', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Server error syncing data." });
+  }
+});
+
+app.put('/api/user/certificate', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (user.role !== 'representative') {
+      return res.status(403).json({ message: "Only Representatives can upload certificates." });
+    }
+
+    user.certificateUrl = req.body.certificateUrl;
+    await user.save();
+
+    const updatedUser = await User.findById(req.user.id).select('-password');
+    res.status(200).json({ message: "Certificate uploaded!", user: updatedUser });
+  } catch (error) {
+    console.error("Certificate Upload Error:", error);
+    res.status(500).json({ message: "Server error uploading certificate." });
   }
 });
 
@@ -426,6 +456,16 @@ app.get('/api/representatives', async (req, res) => {
   }
 });
 
+app.get('/api/admins', async (req, res) => {
+  try {
+    // Fetch admins but strictly hide their passwords!
+    const admins = await User.find({ role: 'admin' }).select('-password');
+    res.status(200).json(admins);
+  } catch (error) {
+    res.status(500).json({ message: "Server error fetching admins." });
+  }
+});
+
 app.put('/api/events/:id/resources', verifyToken, async (req, res) => {
   try {
     const { resources } = req.body;
@@ -449,6 +489,256 @@ app.put('/api/events/:id/resources', verifyToken, async (req, res) => {
     res.status(500).json({ message: "Server error uploading files." });
   }
 });
+
+app.get('/api/admin/dashboard', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({ message: "Access Denied: Admins only." });
+    }
+
+    const allEvents = await Event.find();
+    const allReps = await User.find({ role: 'representative' });
+
+    const DEPARTMENTS = [
+      "Computer Science", "Biology", "Mathematics", "Physics", 
+      "Electronics", "Chemistry", "Management", "Civil Engineering"
+    ];
+
+    let totalParticipants = 0;
+    const deptStats = [];
+    const heatmap = [];
+
+    for (const dept of DEPARTMENTS) {
+      const deptReps = allReps.filter(r => r.department === dept);
+      const deptEvents = allEvents.filter(e => e.department === dept);
+
+      const deptParticipants = deptEvents.reduce((sum, ev) => sum + (Number(ev.participants) || 0), 0);
+      totalParticipants += deptParticipants;
+
+      deptStats.push({
+        name: dept,
+        reps: deptReps.length,
+        events: deptEvents.length,
+        participants: deptParticipants
+      });
+
+      const monthlyActivity = new Array(12).fill(0);
+      deptEvents.forEach(ev => {
+        if (ev.date) {
+          const monthIndex = new Date(ev.date).getMonth();
+          monthlyActivity[monthIndex] += 0.3;
+        }
+      });
+      heatmap.push(monthlyActivity);
+    }
+
+    res.status(200).json({
+      totalEvents: allEvents.length,
+      totalReps: allReps.length,
+      totalDepts: deptStats.filter(d => d.events > 0 || d.reps > 0).length,
+      totalParticipants: totalParticipants,
+      deptStats: deptStats,
+      heatmap: heatmap
+    });
+
+  } catch (error) {
+    console.error("Dashboard Error:", error);
+    res.status(500).json({ message: "Server error fetching dashboard data." });
+  }
+});
+
+
+app.post('/api/admin/events', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || user.role !== 'admin') return res.status(403).json({ message: "Access Denied." });
+
+    const newEvent = await Event.create(req.body);
+    res.status(201).json(newEvent);
+  } catch (error) {
+    console.error("Error creating event:", error);
+    res.status(500).json({ message: "Server error creating event." });
+  }
+});
+
+app.put('/api/admin/events/:id', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || user.role !== 'admin') return res.status(403).json({ message: "Access Denied." });
+
+    const updatedEvent = await Event.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
+    res.status(200).json(updatedEvent);
+  } catch (error) {
+    console.error("Error updating event:", error);
+    res.status(500).json({ message: "Server error updating event." });
+  }
+});
+
+app.delete('/api/admin/events/:id', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || user.role !== 'admin') return res.status(403).json({ message: "Access Denied." });
+
+    await Event.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: "Event deleted successfully." });
+  } catch (error) {
+    console.error("Error deleting event:", error);
+    res.status(500).json({ message: "Server error deleting event." });
+  }
+});
+
+
+app.get('/api/admin/representatives', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || user.role !== 'admin') return res.status(403).json({ message: "Access Denied." });
+
+    const reps = await User.find({ role: 'representative' });
+    res.status(200).json(reps);
+  } catch (error) {
+    console.error("Error fetching reps:", error);
+    res.status(500).json({ message: "Server error fetching representatives." });
+  }
+});
+
+app.put('/api/admin/representatives/:id', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || user.role !== 'admin') return res.status(403).json({ message: "Access Denied." });
+
+    if (req.body.role === 'admin' && user.email !== 'admin@univ-blida.dz') {
+      return res.status(403).json({ message: "Only the Superadmin can promote users to Admin." });
+    }
+
+    const updatedRep = await User.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
+    res.status(200).json(updatedRep);
+  } catch (error) {
+    console.error("Error updating rep:", error);
+    res.status(500).json({ message: "Server error updating representative." });
+  }
+});
+
+app.delete('/api/admin/representatives/:id', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || user.role !== 'admin') return res.status(403).json({ message: "Access Denied." });
+
+    await User.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: "Representative deleted successfully." });
+  } catch (error) {
+    console.error("Error deleting rep:", error);
+    res.status(500).json({ message: "Server error deleting representative." });
+  }
+});
+
+
+app.get('/api/admin/participants', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || user.role !== 'admin') return res.status(403).json({ message: "Access Denied." });
+
+    const participants = await User.find({ role: 'participant' });
+    res.status(200).json(participants);
+  } catch (error) {
+    res.status(500).json({ message: "Server error fetching participants." });
+  }
+});
+
+app.delete('/api/admin/participants/:id', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || user.role !== 'admin') return res.status(403).json({ message: "Access Denied." });
+
+    await User.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: "Participant deleted successfully." });
+  } catch (error) {
+    res.status(500).json({ message: "Server error deleting participant." });
+  }
+});
+
+app.put('/api/admin/participants/:id', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || user.role !== 'admin') return res.status(403).json({ message: "Access Denied." });
+
+    const updatedPart = await User.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
+    res.status(200).json(updatedPart);
+  } catch (error) {
+    console.error("Error updating participant:", error);
+    res.status(500).json({ message: "Server error updating participant." });
+  }
+});
+
+app.get('/api/admin/notifications', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || user.role !== 'admin') return res.status(403).json({ message: "Access Denied." });
+
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    const objectId24hAgo = new mongoose.Types.ObjectId(Math.floor(oneDayAgo.getTime() / 1000).toString(16) + "0000000000000000");
+
+    let notifications = [];
+
+    const newUsers = await User.find({ _id: { $gte: objectId24hAgo } });
+    newUsers.forEach(u => {
+      if (u.role === 'admin') return;
+      notifications.push({
+        icon: u.role === 'representative' ? "🎓" : "👤",
+        msg: `New ${u.role} joined: ${u.fullName}`,
+        time: u._id.getTimestamp()
+      });
+    });
+
+    const newEvents = await Event.find({ _id: { $gte: objectId24hAgo } });
+    newEvents.forEach(e => {
+      notifications.push({
+        icon: "📅",
+        msg: `New ${e.type} created: ${e.title}`,
+        time: e._id.getTimestamp()
+      });
+    });
+
+    const pendingCerts = await User.find({ 
+      role: 'representative', 
+      isCertified: false, 
+      certificateUrl: { $exists: true, $ne: "" } 
+    });
+    
+    pendingCerts.forEach(u => {
+      notifications.push({
+        icon: "📄",
+        msg: `${u.fullName} submitted a certification for validation`,
+        time: new Date()
+      });
+    });
+
+    notifications.sort((a, b) => b.time - a.time);
+
+    const formatTimeAgo = (date) => {
+      const seconds = Math.floor((new Date() - date) / 1000);
+      if (seconds < 60) return "Just now";
+      const minutes = Math.floor(seconds / 60);
+      if (minutes < 60) return `${minutes} min${minutes !== 1 ? 's' : ''} ago`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours} hr${hours !== 1 ? 's' : ''} ago`;
+      return "1 day ago";
+    };
+
+    const formattedNotifs = notifications.map(n => ({
+      icon: n.icon,
+      msg: n.msg,
+      time: formatTimeAgo(n.time)
+    }));
+
+    res.status(200).json(formattedNotifs);
+  } catch (error) {
+    console.error("Notifications Error:", error);
+    res.status(500).json({ message: "Server error fetching notifications." });
+  }
+});
+
 
 const MONGO_URI = "mongodb+srv://abdellahben965_db_user:aihouse123@cluster0.vgehfjl.mongodb.net/?appName=Cluster0";
 

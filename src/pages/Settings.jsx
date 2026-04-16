@@ -1,14 +1,16 @@
 import { useState, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import Footer from "../components/Footer";
 import "./Settings.css";
 
-const TABS = ["Profile", "Personal Info", "Security", "Notifications"];
 
 export default function Settings() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const TABS = user?.role === "admin" 
+    ? ["Profile", "Personal Info", "Security"] 
+    : ["Profile", "Personal Info", "Security", "Notifications"];
   const [activeTab, setActiveTab] = useState(() => {
     const savedTab = localStorage.getItem("activeSettingsTab");
     return savedTab ? savedTab : "Profile";
@@ -28,6 +30,11 @@ export default function Settings() {
     <div className="page settings-page">
       <div className="settings-page__header">
         <div className="container">
+          {user?.role === "admin" && (
+            <Link to="/admin" style={{ color: "rgba(255,255,255,0.7)", display: "inline-block", marginBottom: "1rem", fontWeight: "600", textDecoration: "none" }}>
+              ← Back to Admin Dashboard
+            </Link>
+          )}
           <span className="section-tag">Account</span>
           <h1 className="settings-page__title">Settings</h1>
         </div>
@@ -222,6 +229,37 @@ function PersonalInfoTab({ user }) {
     setError("");
   };
 
+  const handleCertUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setLoading(true);
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch("http://localhost:5000/api/user/certificate", {
+          method: "PUT",
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ certificateUrl: ev.target.result })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          signIn(data.user, token);
+          setSaved(true);
+        }
+      } catch (err) {
+        setError("Failed to upload certificate.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleUpdate = async () => {
     setLoading(true);
     setError("");
@@ -290,10 +328,31 @@ function PersonalInfoTab({ user }) {
       <label>Biography</label>
       <textarea name="bio" value={form.bio} onChange={handleChange} rows="3" style={{ padding: "10px", borderRadius: "8px", border: "1.5px solid var(--border)", fontFamily: "inherit" }} />
     </div>
+    
+          <div className="form-group" style={{ background: "rgba(0,102,255,0.05)", padding: "15px", borderRadius: "8px", border: "1px dashed var(--blue)" }}>
+            <label style={{ color: "var(--blue)" }}>Train the Trainer Certification</label>
+            <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "10px" }}>
+              Upload your official certificate (PDF/Image) to be verified by an Administrator.
+            </p>
+            
+            {user.certificateUrl ? (
+              <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                <span className="settings-success" style={{ margin: 0 }}>✓ File Uploaded</span>
+                <input type="file" id="cert-upload" accept=".pdf,image/*" style={{ display: "none" }} onChange={handleCertUpload} />
+                <button type="button" className="btn-outline" onClick={() => document.getElementById("cert-upload").click()} disabled={loading}>
+                  {loading ? "Uploading..." : "Update File"}
+                </button>
+              </div>
+            ) : (
+              <input type="file" accept=".pdf,image/*" onChange={handleCertUpload} disabled={loading} />
+            )}
+          </div>
   </>
 )}
 
         {/* Read-only fields */}
+        {user?.role !== "admin" && (
+              <>
         <div className="form-group">
           <label>Department <span className="settings-readonly-tag">Read only</span></label>
           <input value={user.department} disabled className="settings-input--readonly" />
@@ -306,6 +365,8 @@ function PersonalInfoTab({ user }) {
             className="settings-input--readonly"
           />
         </div>
+        </>
+            )}
 
         <button 
           className="btn-primary settings-save-btn" 

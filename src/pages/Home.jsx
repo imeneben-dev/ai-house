@@ -1,6 +1,6 @@
 import Hero          from "../components/Hero";
 import StatsBar      from "../components/Statsbar";
-import OfferSection  from "../components/Offersection";
+import OfferSection  from "../components/OfferSection";
 import Partners      from "../components/Partners";
 import Footer        from "../components/Footer";
 import "./Home.css";

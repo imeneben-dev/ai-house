@@ -6,6 +6,7 @@ const AuthContext = createContext();
 const MOCK_USERS = [
   { id: 1, fullName: "Dr. Amira Benali",  email: "amira@univ-blida.dz",  department: "Computer Science", role: "representative", password: "1234" },
   { id: 2, fullName: "Yacine Meziani",    email: "yacine@univ-blida.dz", department: "Biology",          role: "participant",    password: "1234" },
+  { id: 3, fullName: "Admin User",        email: "admin@univ-blida.dz",  department: "Administration",   role: "admin",          password: "SecurePassword123!" }
 ];
 
 export function AuthProvider({ children }) {
@@ -14,6 +15,28 @@ export function AuthProvider({ children }) {
     const savedUser = localStorage.getItem("user");
     return savedUser ? JSON.parse(savedUser) : null;
   });
+  useEffect(() => {
+    const fetchFreshUserData = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const response = await fetch("http://localhost:5000/api/user/me", {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const freshUser = await response.json();
+          setUser(freshUser);
+          localStorage.setItem("user", JSON.stringify(freshUser));
+        }
+      } catch (error) {
+        console.error("Failed to sync user data");
+      }
+    };
+
+    fetchFreshUserData();
+  }, []);
   const signIn = (userData, token) => {
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(userData));
