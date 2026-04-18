@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import logo from "../assets/images/ai_house_logo.svg";
 import "./Footer.css";
 
 export default function Footer() {
@@ -8,13 +9,7 @@ export default function Footer() {
         {/* Brand */}
         <div className="footer__brand">
           <Link to="/" className="footer__logo">
-            <div className="footer__logo-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10" stroke="#fff" strokeWidth="1.8"/>
-                <path d="M8 12h8M12 8v8" stroke="#fff" strokeWidth="1.8" strokeLinecap="round"/>
-                <circle cx="12" cy="12" r="2.5" fill="#fff"/>
-              </svg>
-            </div>
+            <img src={logo} alt="AI House Logo" style={{ height:"44px", width:"auto", objectFit:"contain" }} />
             AI House · Blida 1
           </Link>
           <p className="footer__tagline">
