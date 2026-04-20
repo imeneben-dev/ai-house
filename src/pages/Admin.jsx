@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useEvents } from "../context/EventsContext";
 import { DEPARTMENTS } from "../data/mockData";
+import logo from "../assets/images/ai_house_logo.svg";
 import "./Admin.css";
 
 // ─────────────────────────────────────────────
@@ -1075,13 +1076,7 @@ export default function Admin() {
       <header className="admin-header premium-header">
         <div className="header-left">
           <div className="admin-logo-official">
-            <div className="navbar__logo-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10" stroke="#fff" strokeWidth="1.8"/>
-                <path d="M8 12h8M12 8v8" stroke="#fff" strokeWidth="1.8" strokeLinecap="round"/>
-                <circle cx="12" cy="12" r="2.5" fill="#fff"/>
-              </svg>
-            </div>
+            <img src={logo} alt="AI House Logo" className="admin-logo-img" />
             <span className="navbar__logo-text">
               AI House <span className="navbar__logo-sub">· Admin</span>
             </span>

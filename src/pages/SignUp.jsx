@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { DEPARTMENTS } from "../data/mockData";
+import logo from "../assets/images/ai_house_logo.svg";
 import "./Auth.css";
 
 export default function SignUp() {
@@ -9,9 +10,9 @@ export default function SignUp() {
   const navigate   = useNavigate();
 
   const [form, setForm] = useState({
-  fullName: "", email: "", department: "", password: "", role: "participant",
-  title: "", focus: "", bio: ""
-});
+    fullName: "", email: "", department: "", password: "", confirmPassword: "",
+    role: "participant", title: "", focus: "", bio: ""
+  });
   const [error, setError] = useState("");
 
   const handleChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
@@ -28,9 +29,7 @@ export default function SignUp() {
     try {
       const response = await fetch("http://localhost:5000/api/signup", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fullName: form.fullName,
           email: form.email,
@@ -42,15 +41,12 @@ export default function SignUp() {
           bio: form.bio
         }),
       });
-
       const data = await response.json();
-
       if (response.ok) {
         navigate("/");
       } else {
         setError(data.alertText + " " + data.fix);
       }
-
     } catch (err) {
       setError("Failed to connect to the server. Please try again later.");
     }
@@ -59,15 +55,9 @@ export default function SignUp() {
   return (
     <div className="page auth-page">
       <div className="auth-card auth-card--wide">
-        {/* Logo */}
+
         <Link to="/" className="auth-logo">
-          <div className="auth-logo__icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10" stroke="#fff" strokeWidth="1.8"/>
-              <path d="M8 12h8M12 8v8" stroke="#fff" strokeWidth="1.8" strokeLinecap="round"/>
-              <circle cx="12" cy="12" r="2.5" fill="#fff"/>
-            </svg>
-          </div>
+          <img src={logo} alt="AI House Logo" className="auth-logo__img" />
           AI House · Blida 1
         </Link>
 
@@ -105,17 +95,17 @@ export default function SignUp() {
         {error && <div className="auth-error">{error}</div>}
 
         <form className="auth-form auth-form--grid" onSubmit={handleSubmit}>
-          
+
           <div className="form-group">
             <label>Full Name *</label>
             <input name="fullName" value={form.fullName} onChange={handleChange} placeholder="e.g. Dr. Amira Benali" />
           </div>
-          
+
           <div className="form-group">
             <label>Email *</label>
             <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="your@email.com" />
           </div>
-          
+
           <div className="form-group">
             <label>Department *</label>
             <select name="department" value={form.department} onChange={handleChange}>
@@ -136,12 +126,12 @@ export default function SignUp() {
               </div>
               <div className="form-group form-group--full">
                 <label>Short Bio</label>
-                <textarea 
-                  name="bio" 
-                  value={form.bio} 
-                  onChange={handleChange} 
-                  rows="3" 
-                  placeholder="Tell us about your background..." 
+                <textarea
+                  name="bio"
+                  value={form.bio}
+                  onChange={handleChange}
+                  rows="3"
+                  placeholder="Tell us about your background..."
                   style={{ padding: "10px", borderRadius: "8px", border: "1.5px solid var(--border)", fontFamily: "inherit" }}
                 />
               </div>
@@ -154,12 +144,12 @@ export default function SignUp() {
             <label>Password *</label>
             <input name="password" type="password" value={form.password} onChange={handleChange} placeholder="••••••••" />
           </div>
-          
+
           <div className="form-group">
             <label>Confirm Password *</label>
             <input name="confirmPassword" type="password" value={form.confirmPassword} onChange={handleChange} placeholder="••••••••" />
           </div>
-          
+
           <div className="form-group form-group--full">
             <button type="submit" className="btn-primary auth-submit">
               Create Account

@@ -30,13 +30,10 @@
   text-decoration: none;
   margin-bottom: 1.8rem;
 }
-.auth-logo__icon {
-  width: 32px; height: 32px;
-  background: var(--blue);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.auth-logo__img {
+  height: 48px;
+  width: auto;
+  object-fit: contain;
   flex-shrink: 0;
 }
 

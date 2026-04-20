@@ -38,10 +38,16 @@
   color: var(--blue);
 }
 .navbar__logo-icon {
-  width: 34px; height: 34px;
+  width: 24px; height: 24px;
   border-radius: 9px;
   background: var(--blue);
   display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.admin-logo-img{
+  height: auto;
+  width: 60px;
+  object-fit: contain;
   flex-shrink: 0;
 }
 .navbar__logo-text { color: var(--blue); font-weight: 700; }

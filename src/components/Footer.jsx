@@ -1,22 +1,15 @@
 import { Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import logo from "../assets/images/ai_house_logo.svg";
 import "./Footer.css";
 
 export default function Footer() {
-  const { user } = useAuth();
   return (
     <footer className="footer">
       <div className="container footer__inner">
         {/* Brand */}
         <div className="footer__brand">
           <Link to="/" className="footer__logo">
-            <div className="footer__logo-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10" stroke="#fff" strokeWidth="1.8"/>
-                <path d="M8 12h8M12 8v8" stroke="#fff" strokeWidth="1.8" strokeLinecap="round"/>
-                <circle cx="12" cy="12" r="2.5" fill="#fff"/>
-              </svg>
-            </div>
+            <img src={logo} alt="AI House Logo" style={{ height:"44px", width:"auto", objectFit:"contain" }} />
             AI House · Blida 1
           </Link>
           <p className="footer__tagline">
@@ -27,22 +20,10 @@ export default function Footer() {
 
         {/* Links */}
         <div className="footer__col">
-          {/* MAGIC FIX 2: Change the title depending on the role */}
-          <h4>{user?.role === "admin" ? "Admin Panel" : "Navigate"}</h4>
-          
-          {/* MAGIC FIX 3: Draw a totally different list for Admins! */}
-          {user?.role === "admin" ? (
-            <ul>
-              <li><Link to="/admin">Dashboard Overview</Link></li>
-              <li><Link to="/settings">Security & Settings</Link></li>
-            </ul>
-          ) : (
-            <ul>
-              <li><Link to="/">Home</Link></li>
-              <li><Link to="/training">Training</Link></li>
-              <li><Link to="/representatives">Representatives</Link></li>
-            </ul>
-          )}
+          <h4>Navigate</h4>
+          <Link to="/">Home</Link>
+          <Link to="/training">Training Hub</Link>
+          <Link to="/representatives">Representatives</Link>
         </div>
 
         <div className="footer__col">

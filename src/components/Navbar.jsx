@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import UserMenu from "./Usermenu";
-import SignUp from "../pages/SignUp";
+import UserMenu from "./UserMenu";
+import logo from "../assets/images/ai_house_logo.svg";
 import "./Navbar.css";
 
 const NAV_LINKS = [
@@ -20,13 +20,7 @@ export default function Navbar() {
     <nav className="navbar">
       {/* Logo */}
       <Link to="/" className="navbar__logo">
-        <div className="navbar__logo-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" stroke="#fff" strokeWidth="1.8"/>
-            <path d="M8 12h8M12 8v8" stroke="#fff" strokeWidth="1.8" strokeLinecap="round"/>
-            <circle cx="12" cy="12" r="2.5" fill="#fff"/>
-          </svg>
-        </div>
+        <img src={logo} alt="AI House Logo" className="navbar__logo-img" />
         <span className="navbar__logo-text">
           AI House <span className="navbar__logo-sub">· Blida 1</span>
         </span>
@@ -52,14 +46,16 @@ export default function Navbar() {
       {/* Right side */}
       <div className="navbar__right">
         {user ? (
-          <UserMenu />
-        ) : location.pathname === '/signup' ? (
-    <Link to="/signin" className="navbar__signin">Sign In</Link>
-  ) : location.pathname === '/signin' ? (
-    <Link to="/signup" className="navbar__signin">Sign Up</Link>
-  ) : (
-    <Link to="/signin" className="navbar__signin">Sign In</Link>
-  )}
+          <>
+            {user.role === "admin" && (
+              <Link to="/admin" className="navbar__admin-link">Admin Panel</Link>
+            )}
+            <UserMenu />
+          </>
+        ) : (
+          <Link to="/signin" className="navbar__signin">Sign In</Link>
+        )}
+
         {/* Hamburger */}
         <button
           className={"navbar__hamburger" + (menuOpen ? " open" : "")}

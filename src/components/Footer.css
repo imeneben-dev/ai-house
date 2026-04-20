@@ -3,7 +3,7 @@
   color: rgba(255,255,255,0.85);
   font-family: var(--font);
   margin-top: auto;
-  padding-top: 2rem;
+  padding-top: 4rem;
 }
 
 .footer__inner {
@@ -24,15 +24,6 @@
   font-size: 1rem;
   text-decoration: none;
   margin-bottom: 1rem;
-}
-.footer__logo-icon {
-  width: 30px; height: 30px;
-  border-radius: 8px;
-  background: rgba(255,255,255,0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
 }
 .footer__tagline {
   font-size: 0.85rem;

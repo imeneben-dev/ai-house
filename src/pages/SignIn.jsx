@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import logo from "../assets/images/ai_house_logo.svg";
 import "./Auth.css";
 
 export default function SignIn() {
@@ -16,40 +17,21 @@ export default function SignIn() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    
-    if (!form.email || !form.password) { 
-      setError("Please fill in all fields."); 
-      return; 
-    }
-    
+    if (!form.email || !form.password) { setError("Please fill in all fields."); return; }
     setLoading(true);
-    
     try {
-      // 1. Ask the real database if the user exists
       const response = await fetch("http://localhost:5000/api/signin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: form.email,
-          password: form.password
-        }),
+        body: JSON.stringify({ email: form.email, password: form.password }),
       });
-
       const data = await response.json();
       setLoading(false);
-
       if (response.ok) {
-        // 2. Database said yes! Put the user in the backpack.
         signIn(data.user, data.token);
-        
-        // 3. MAGIC ROUTING: Send Admins to the dashboard, and everyone else Home!
-        if (data.user.role === "admin") {
-          navigate("/admin");
-        } else {
-          navigate("/");
-        }
+        if (data.user.role === "admin") navigate("/admin");
+        else navigate("/");
       } else {
-        // Database said no (wrong password, etc.)
         setError(data.message);
       }
     } catch (err) {
@@ -61,15 +43,9 @@ export default function SignIn() {
   return (
     <div className="page auth-page">
       <div className="auth-card">
-        {/* Logo */}
+
         <Link to="/" className="auth-logo">
-          <div className="auth-logo__icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10" stroke="#fff" strokeWidth="1.8"/>
-              <path d="M8 12h8M12 8v8" stroke="#fff" strokeWidth="1.8" strokeLinecap="round"/>
-              <circle cx="12" cy="12" r="2.5" fill="#fff"/>
-            </svg>
-          </div>
+          <img src={logo} alt="AI House Logo" className="auth-logo__img" />
           AI House · Blida 1
         </Link>
 
@@ -92,7 +68,6 @@ export default function SignIn() {
           </button>
         </form>
 
-        {/* Demo hint */}
         <div className="auth-demo">
           <strong>Demo credentials:</strong><br />
           Rep1: abdou.test@univ-blida.dz<br />
