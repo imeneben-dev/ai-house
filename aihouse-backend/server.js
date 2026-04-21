@@ -8,6 +8,16 @@ require('dotenv').config();
 
 const app = express();
 
+const cors = require('cors');
+
+const corsOptions = {
+  origin: 'https://aihousedz.netlify.app',
+  credentials: true, 
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
+
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
