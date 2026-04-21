@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import aiHouseLogo from "../assets/ai_house_logo.svg";
+import blidaUniLogo from "../assets/universit_saad_dahlab_de_blida_1_logo.svg";
 import "./Footer.css";
 
 export default function Footer() {
@@ -10,13 +12,7 @@ export default function Footer() {
         {/* Brand */}
         <div className="footer__brand">
           <Link to="/" className="footer__logo">
-            <div className="footer__logo-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10" stroke="#fff" strokeWidth="1.8"/>
-                <path d="M8 12h8M12 8v8" stroke="#fff" strokeWidth="1.8" strokeLinecap="round"/>
-                <circle cx="12" cy="12" r="2.5" fill="#fff"/>
-              </svg>
-            </div>
+            <img src={aiHouseLogo} alt="AI House Logo" style={{ height:"60px", width:"auto", objectFit:"contain" }} />
             AI House · Blida 1
           </Link>
           <p className="footer__tagline">
@@ -61,7 +57,6 @@ export default function Footer() {
       <div className="footer__bottom">
         <div className="container footer__bottom-inner">
           <span>© {new Date().getFullYear()} AI House · University of Blida 1</span>
-          <span>Built with the MERN Stack</span>
         </div>
       </div>
     </footer>

@@ -104,3 +104,43 @@ img { display: block; max-width: 100%; }
 
 /* ── Page wrapper (offset for fixed navbar) ─────────────── */
 .page { padding-top: 64px; }
+
+
+/* 1. Standard Header/Navbar Logo */
+.brand-logo-nav {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* 2. Large Login/Signup Logo */
+.brand-logo-large {
+  height: 65px;
+  width: auto;
+  object-fit: contain;
+  margin: 0 auto 1.5rem auto;
+  display: block;
+}
+
+/* 3. Footer Logo */
+.brand-logo-footer {
+  height: 45px;
+  width: auto;
+  object-fit: contain;
+  margin-bottom: 1rem;
+}
+
+/* 4. Partner Logos (Grayscale with Color on Hover) */
+.partner-logo-img {
+  height: 48px;
+  width: auto;
+  object-fit: contain;
+  filter: grayscale(100%) opacity(70%);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+.partner-logo-img:hover {
+  filter: grayscale(0%) opacity(100%);
+  transform: scale(1.05);
+}

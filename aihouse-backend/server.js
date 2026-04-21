@@ -13,6 +13,12 @@ app.use(express.json({ limit: '50mb' }));
 
 const Stat = require('./models/Stat');
 
+const BannedEmailSchema = new mongoose.Schema({
+  email: { type: String, required: true, unique: true },
+  deletedAt: { type: Date, default: Date.now }
+});
+const BannedEmail = mongoose.model('BannedEmail', BannedEmailSchema);
+
 app.get('/api/stats', async (req, res) => {
   try {
     let stats = await Stat.findOne();
@@ -56,6 +62,13 @@ app.post('/api/signup', async (req, res) => {
   alertText: "Oops! Someone is already using that email.",
   fix: "Try logging in instead!"
 });
+    }
+
+    const isBanned = await BannedEmail.findOne({ email: req.body.email });
+    if (isBanned) {
+      return res.status(403).json({ 
+        message: "This email address has been permanently disabled by an Administrator. You cannot create a new account with this email." 
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -624,11 +637,19 @@ app.delete('/api/admin/representatives/:id', verifyToken, async (req, res) => {
     const user = await User.findById(req.user.id);
     if (!user || user.role !== 'admin') return res.status(403).json({ message: "Access Denied." });
 
+    const targetUser = await User.findById(req.params.id);
+    if (targetUser && targetUser.email === 'admin@univ-blida.dz') {
+      return res.status(403).json({ message: "Action Denied: The Super Admin account cannot be deleted." });
+    }
+
+    if (targetUser) {
+      await BannedEmail.create({ email: targetUser.email }).catch(err => console.log("Email already blacklisted"));
+    }
+
     await User.findByIdAndDelete(req.params.id);
-    res.status(200).json({ message: "Representative deleted successfully." });
+    res.status(200).json({ message: "Account deleted and email permanently blacklisted." });
   } catch (error) {
-    console.error("Error deleting rep:", error);
-    res.status(500).json({ message: "Server error deleting representative." });
+    res.status(500).json({ message: "Server error deleting account." });
   }
 });
 
@@ -650,8 +671,17 @@ app.delete('/api/admin/participants/:id', verifyToken, async (req, res) => {
     const user = await User.findById(req.user.id);
     if (!user || user.role !== 'admin') return res.status(403).json({ message: "Access Denied." });
 
+    const targetUser = await User.findById(req.params.id);
+    if (targetUser && targetUser.email === 'admin@univ-blida.dz') {
+      return res.status(403).json({ message: "Action Denied: The Super Admin account cannot be deleted." });
+    }
+
+    if (targetUser) {
+      await BannedEmail.create({ email: targetUser.email }).catch(err => console.log("Email already blacklisted"));
+    }
+
     await User.findByIdAndDelete(req.params.id);
-    res.status(200).json({ message: "Participant deleted successfully." });
+    res.status(200).json({ message: "Participant deleted and email permanently blacklisted." });
   } catch (error) {
     res.status(500).json({ message: "Server error deleting participant." });
   }

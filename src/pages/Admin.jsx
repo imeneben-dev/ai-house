@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useEvents } from "../context/EventsContext";
 import { DEPARTMENTS } from "../data/mockData";
+import aiHouseLogo from "../assets/ai_house_logo.svg";
 import "./Admin.css";
 
 // ─────────────────────────────────────────────
@@ -146,30 +147,33 @@ function ManageActivities({ events, setEvents, onAddEvent, setSuccessMsg }) {
   const handleDelete = async () => {
     try {
       const token = localStorage.getItem("token");
-      const eventId = deleteTarget._id || deleteTarget.id; // Safely grab MongoDB _id
+      const repId = deleteTarget._id || deleteTarget.id;
       
-      const res = await fetch(`http://localhost:5000/api/admin/events/${eventId}`, {
+      const res = await fetch(`http://localhost:5000/api/admin/representatives/${repId}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });
       
       if (res.ok) {
-      setEvents(prev => prev.filter(e => (e._id || e.id) !== eventId));
-      setDeleteTarget(null);
-      setSuccessMsg("Activity deleted successfully!");
-      setTimeout(() => setSuccessMsg(""), 3000);
-    }
+        setReps(prev => prev.filter(r => (r._id || r.id) !== repId));
+        setAdminsList(prev => prev.filter(a => (a._id || a.id) !== repId)); 
+
+        setDeleteTarget(null);
+
+        setSuccessMsg("Account permanently deleted & blacklisted!");
+        setTimeout(() => setSuccessMsg(""), 3000);
+      }
     } catch (error) {
-      console.error("Failed to delete event", error);
+      console.error("Failed to delete account", error);
     }
   };
 
   const handleSave = async () => {
     try {
       const token = localStorage.getItem("token");
-      const eventId = editTarget._id || editTarget.id;
+      const repId = editTarget._id || editTarget.id;
       
-      const res = await fetch(`http://localhost:5000/api/admin/events/${eventId}`, {
+      const res = await fetch(`http://localhost:5000/api/admin/representatives/${repId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -179,14 +183,25 @@ function ManageActivities({ events, setEvents, onAddEvent, setSuccessMsg }) {
       });
       
       if (res.ok) {
-      const updatedEvent = await res.json();
-      setEvents(prev => prev.map(e => (e._id || e.id) === eventId ? updatedEvent : e));
-      setEditTarget(null);
-      setSuccessMsg("Activity updated successfully!");
-      setTimeout(() => setSuccessMsg(""), 3000);
-    }
+        const updatedRep = await res.json();
+        
+        if (updatedRep.role === "participant") {
+          setReps(prev => prev.filter(r => (r._id || r.id) !== repId));
+          setParticipants(prev => [...prev, updatedRep]);
+        } else if (updatedRep.role === "admin") {
+          setReps(prev => prev.filter(r => (r._id || r.id) !== repId));
+          setAdminsList(prev => [...prev, updatedRep]); 
+        } else {
+          setReps(prev => prev.map(r => (r._id || r.id) === repId ? updatedRep : r));
+        }
+
+        setEditTarget(null);
+
+        setSuccessMsg("Representative updated successfully!");
+        setTimeout(() => setSuccessMsg(""), 3000);
+      }
     } catch (error) {
-      console.error("Failed to update event", error);
+      console.error("Failed to update representative", error);
     }
   };
 
@@ -811,6 +826,76 @@ function ManageReps({ user, setSuccessMsg }) {
           </div>
         </div>
       )}
+      {/* ========================================== */}
+      {/* ALL ACTION MODALS */}
+      {/* ========================================== */}
+
+      {/* 1. Delete Participant Modal */}
+      {deletePartTarget && (
+        <div className="modal-overlay" onClick={() => setDeletePartTarget(null)}>
+          <div className="glass-modal confirmation-card" onClick={e => e.stopPropagation()}>
+            <div className="modal-header-centered">
+              <h2>Remove Participant?</h2>
+              <p className="content-subtitle"><strong>{deletePartTarget.fullName}</strong> will be permanently erased from the database.</p>
+            </div>
+            <div className="modal-footer-clean">
+              <button className="btn-cancel" onClick={() => setDeletePartTarget(null)}>Cancel</button>
+              <button className="btn-publish-gradient btn-danger" onClick={handleDeleteParticipant}>Yes, Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2. Edit Participant Modal */}
+      {editPartTarget && (
+        <div className="modal-overlay" onClick={() => setEditPartTarget(null)}>
+          <div className="glass-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header-centered"><h2>Edit Participant</h2></div>
+            <div className="modern-form">
+              <div className="form-group-admin">
+                <label>Full Name</label>
+                <input className="input-premium-admin" value={editPartTarget.fullName || ""} onChange={e => setEditPartTarget(p=>({...p,fullName:e.target.value}))} />
+              </div>
+              <div className="form-row-admin">
+                <div className="form-group-admin">
+                  <label>Department</label>
+                  <select className="select-premium-admin" value={editPartTarget.department || ""} onChange={e => setEditPartTarget(p=>({...p,department:e.target.value}))}>
+                    {DEPARTMENTS.map(d=><option key={d} value={d}>{d}</option>)}
+                  </select>
+                </div>
+                <div className="form-group-admin">
+                  <label>Account Role</label>
+                  <select className="select-premium-admin" value={editPartTarget.role || "participant"} onChange={e => setEditPartTarget(p=>({...p,role:e.target.value}))}>
+                    <option value="participant">Participant</option>
+                    <option value="representative">Representative</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer-clean">
+              <button className="btn-cancel" onClick={() => setEditPartTarget(null)}>Cancel</button>
+              <button className="btn-publish-gradient" onClick={handleSaveParticipant}>Save Changes</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 3. Delete Representative/Admin Modal */}
+      {deleteTarget && (
+        <div className="modal-overlay" onClick={() => setDeleteTarget(null)}>
+          <div className="glass-modal confirmation-card" onClick={e => e.stopPropagation()}>
+            <div className="modal-header-centered">
+              <h2>Delete Account?</h2>
+              <p className="content-subtitle"><strong>{deleteTarget.fullName}</strong> will be permanently erased from the database.</p>
+            </div>
+            <div className="modal-footer-clean">
+              <button className="btn-cancel" onClick={() => setDeleteTarget(null)}>Cancel</button>
+              <button className="btn-publish-gradient btn-danger" onClick={handleDelete}>Yes, Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
@@ -1075,13 +1160,11 @@ export default function Admin() {
       <header className="admin-header premium-header">
         <div className="header-left">
           <div className="admin-logo-official">
-            <div className="navbar__logo-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10" stroke="#fff" strokeWidth="1.8"/>
-                <path d="M8 12h8M12 8v8" stroke="#fff" strokeWidth="1.8" strokeLinecap="round"/>
-                <circle cx="12" cy="12" r="2.5" fill="#fff"/>
-              </svg>
-            </div>
+            <img 
+                src={aiHouseLogo} 
+                alt="AI House Logo" 
+                style={{ height: "48px", width: "auto", objectFit: "contain", display: "block" }} 
+              />            
             <span className="navbar__logo-text">
               AI House <span className="navbar__logo-sub">· Admin</span>
             </span>
@@ -1174,13 +1257,6 @@ export default function Admin() {
         {/* Main content */}
       <main className="admin-content-premium">
 
-        {successMsg && (
-          <div className="success-banner-admin">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-            {successMsg}
-          </div>
-        )}
-
         {activeTab === "dashboard"       && <DashboardHome data={dashboardData} />}
 
         {/* Pass setSuccessMsg to the tabs! */}
@@ -1198,6 +1274,26 @@ export default function Admin() {
           adminName={user.fullName}
         />
       )}
+
+      {/* Create event modal */}
+      {isModalOpen && (
+        <CreateActivityModal
+          onClose={() => setIsModalOpen(false)}
+          onPublish={handlePublish}
+          adminName={user?.fullName || "Admin"}
+        />
+      )}
+
+      {successMsg && (
+        <div className="toast-notification-premium">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          {successMsg}
+        </div>
+      )}
+
     </div>
   );
 }

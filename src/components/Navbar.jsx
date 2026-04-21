@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import UserMenu from "./Usermenu";
 import SignUp from "../pages/SignUp";
+import aiHouseLogo from "../assets/ai_house_logo.svg";
 import "./Navbar.css";
 
 const NAV_LINKS = [
@@ -20,13 +21,9 @@ export default function Navbar() {
     <nav className="navbar">
       {/* Logo */}
       <Link to="/" className="navbar__logo">
-        <div className="navbar__logo-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" stroke="#fff" strokeWidth="1.8"/>
-            <path d="M8 12h8M12 8v8" stroke="#fff" strokeWidth="1.8" strokeLinecap="round"/>
-            <circle cx="12" cy="12" r="2.5" fill="#fff"/>
-          </svg>
-        </div>
+        <img src={aiHouseLogo} alt="AI House Logo" className="navbar__logo-img" 
+        style={{ height: "58px", width: "auto", objectFit: "contain", display: "block" }}
+        />
         <span className="navbar__logo-text">
           AI House <span className="navbar__logo-sub">· Blida 1</span>
         </span>

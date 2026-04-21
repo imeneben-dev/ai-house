@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import aiHouseLogo from "../assets/ai_house_logo.svg";
 import "./Auth.css";
 
 export default function SignIn() {
@@ -63,16 +64,13 @@ export default function SignIn() {
       <div className="auth-card">
         {/* Logo */}
         <Link to="/" className="auth-logo">
-          <div className="auth-logo__icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10" stroke="#fff" strokeWidth="1.8"/>
-              <path d="M8 12h8M12 8v8" stroke="#fff" strokeWidth="1.8" strokeLinecap="round"/>
-              <circle cx="12" cy="12" r="2.5" fill="#fff"/>
-            </svg>
-          </div>
+          <img src={aiHouseLogo} alt="AI House Logo" className="auth-logo__img" 
+          
+            style={{ height: "68px", width: "auto", objectFit: "contain", display: "block" }}
+
+          />
           AI House · Blida 1
         </Link>
-
         <h1 className="auth-title">Welcome back</h1>
         <p className="auth-sub">Sign in to your account to continue.</p>
 
