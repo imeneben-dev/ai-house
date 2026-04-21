@@ -591,9 +591,92 @@
   .dashboard-grid-layout { grid-template-columns: 1fr; }
 }
 @media (max-width: 768px) {
-  .admin-sidebar-premium { display: none; }
-  .admin-content-premium { margin-left: 0; padding: 1.5rem 1rem; }
-  .form-row-admin { grid-template-columns: 1fr; }
+  
+  /* 1. Make the main content use the full width */
+  .admin-content-premium {
+    margin-left: 0 !important;
+    padding: 80px 1rem 90px 1rem !important; /* Extra padding at bottom so nav bar doesn't hide text */
+  }
+
+  /* 2. Transform Sidebar into a Bottom App Bar */
+  .admin-sidebar-premium {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    top: auto;
+    width: 100%;
+    height: 70px;
+    flex-direction: row;
+    border-right: none;
+    border-top: 1px solid var(--border);
+    padding: 0;
+    z-index: 1000;
+    overflow-x: auto; /* Allow scrolling if too many buttons */
+    background: #fff;
+  }
+
+  /* 3. Arrange the navigation buttons horizontally */
+  .admin-sidebar-premium .nav-group {
+    display: flex;
+    flex-direction: row;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    justify-content: space-around;
+  }
+
+  /* Hide the text labels (like "Overview" or "Manage") on mobile */
+  .admin-sidebar-premium .nav-label {
+    display: none;
+  }
+
+  /* 4. Style the individual buttons for finger-tapping */
+  .admin-sidebar-premium .nav-item-p {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 8px;
+    gap: 4px;
+    font-size: 0.65rem;
+    flex: 1;
+    border-radius: 0;
+  }
+
+  /* 5. Clean up the top header to prevent squashing */
+  .admin-header {
+    padding: 0 1rem;
+  }
+  
+  /* Hide the Name and Role text on small screens */
+  .admin-header-info {
+    display: none; 
+  }
+  
+  /* Make the logo slightly smaller on mobile */
+  .brand-logo-nav {
+    height: 28px;
+  }
+
+  /* 6. Fix Overview Tab: Stack the stat cards vertically on phones */
+  .stats-grid {
+    grid-template-columns: 1fr !important; /* '1fr' means 1 single column */
+    gap: 1rem !important;
+  }
+
+  /* 7. Fix Overview Tab: Stack the bottom charts and heatmaps */
+  .dashboard-grid-layout {
+    grid-template-columns: 1fr !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1.5rem !important;
+  }
+  
+  /* 8. Make sure the content boxes don't overflow the screen */
+  .dashboard-view .glass-card {
+    width: 100%;
+    overflow-x: auto; /* Let the charts swipe left/right if needed */
+  }
+
 }
 
 /* ── Premium Hover Tooltip ── */
@@ -688,4 +771,14 @@
 @keyframes slideUpFade {
   from { opacity: 0; transform: translateY(30px) scale(0.9); }
   to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.data-table-container {
+  width: 100%;
+  overflow-x: auto; /* Allows swiping left/right */
+  -webkit-overflow-scrolling: touch; /* Makes scrolling smooth on iPhones */
+}
+
+.modern-table {
+  min-width: 700px; /* Forces the table to stay wide so it doesn't squash the text */
 }
