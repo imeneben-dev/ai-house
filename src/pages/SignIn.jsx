@@ -27,7 +27,7 @@ export default function SignIn() {
     
     try {
       // 1. Ask the real database if the user exists
-      const response = await fetch("http://localhost:5000/api/signin", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/signin`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

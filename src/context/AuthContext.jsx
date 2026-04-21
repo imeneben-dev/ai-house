@@ -21,7 +21,7 @@ export function AuthProvider({ children }) {
       if (!token) return;
 
       try {
-        const response = await fetch("http://localhost:5000/api/user/me", {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/me`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
         

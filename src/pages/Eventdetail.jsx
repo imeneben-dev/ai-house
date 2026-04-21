@@ -33,7 +33,7 @@ export default function EventDetail() {
 
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch(`http://localhost:5000/api/events/${event.id}/resources`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/events/${event.id}/resources`, {
           method: "PUT",
           headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
           body: JSON.stringify({ resources: updatedResources })
@@ -83,7 +83,7 @@ export default function EventDetail() {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await fetch(`http://localhost:5000/api/events/${event.id}/register`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/events/${event.id}/register`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",

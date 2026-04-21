@@ -125,7 +125,7 @@ function ManageActivities({ events, setEvents, onAddEvent, setSuccessMsg }) {
     const fetchRepsForPictures = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:5000/api/admin/representatives", {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/representatives`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
         if (res.ok) {
@@ -149,7 +149,7 @@ function ManageActivities({ events, setEvents, onAddEvent, setSuccessMsg }) {
       const token = localStorage.getItem("token");
       const repId = deleteTarget._id || deleteTarget.id;
       
-      const res = await fetch(`http://localhost:5000/api/admin/representatives/${repId}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/representatives/${repId}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -173,7 +173,7 @@ function ManageActivities({ events, setEvents, onAddEvent, setSuccessMsg }) {
       const token = localStorage.getItem("token");
       const repId = editTarget._id || editTarget.id;
       
-      const res = await fetch(`http://localhost:5000/api/admin/representatives/${repId}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/representatives/${repId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -432,14 +432,14 @@ function ManageReps({ user, setSuccessMsg }) {
         const token = localStorage.getItem("token");
         
         // Fetch Reps
-        const resReps = await fetch("http://localhost:5000/api/admin/representatives", { headers: { "Authorization": `Bearer ${token}` } });
+        const resReps = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/representatives`, { headers: { "Authorization": `Bearer ${token}` } });
         if (resReps.ok) setReps(await resReps.json());
 
         // Fetch Participants
-        const resParts = await fetch("http://localhost:5000/api/admin/participants", { headers: { "Authorization": `Bearer ${token}` } });
+        const resParts = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/participants`, { headers: { "Authorization": `Bearer ${token}` } });
         if (resParts.ok) setParticipants(await resParts.json());
 
-        const resAdmins = await fetch("http://localhost:5000/api/admins");
+        const resAdmins = await fetch(`${import.meta.env.VITE_API_URL}/api/admins`);
       if (resAdmins.ok) {
         const adminData = await resAdmins.json();
         setAdminsList(adminData.filter(a => a.email !== "admin@univ-blida.dz"));
@@ -466,7 +466,7 @@ function ManageReps({ user, setSuccessMsg }) {
       const token = localStorage.getItem("token");
       const repId = editTarget._id || editTarget.id;
       
-      const res = await fetch(`http://localhost:5000/api/admin/representatives/${repId}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/representatives/${repId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -498,7 +498,7 @@ function ManageReps({ user, setSuccessMsg }) {
       const token = localStorage.getItem("token");
       const repId = deleteTarget._id || deleteTarget.id;
       
-      const res = await fetch(`http://localhost:5000/api/admin/representatives/${repId}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/representatives/${repId}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -517,7 +517,7 @@ function ManageReps({ user, setSuccessMsg }) {
     try {
       const token = localStorage.getItem("token");
       const partId = deletePartTarget._id || deletePartTarget.id;
-      const res = await fetch(`http://localhost:5000/api/admin/participants/${partId}`, { method: "DELETE", headers: { "Authorization": `Bearer ${token}` } });
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/participants/${partId}`, { method: "DELETE", headers: { "Authorization": `Bearer ${token}` } });
       if (res.ok) {
         setParticipants(prev => prev.filter(p => (p._id || p.id) !== partId));
         setDeletePartTarget(null);
@@ -534,7 +534,7 @@ function ManageReps({ user, setSuccessMsg }) {
       const token = localStorage.getItem("token");
       const adminId = demoteTarget._id || demoteTarget.id;
 
-      const res = await fetch(`http://localhost:5000/api/admin/representatives/${adminId}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/representatives/${adminId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({ ...demoteTarget, role: "representative" }) 
@@ -559,7 +559,7 @@ function ManageReps({ user, setSuccessMsg }) {
       const token = localStorage.getItem("token");
       const partId = editPartTarget._id || editPartTarget.id;
       
-      const res = await fetch(`http://localhost:5000/api/admin/participants/${partId}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/participants/${partId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify(editPartTarget)
@@ -1075,13 +1075,13 @@ export default function Admin() {
         const token = localStorage.getItem("token");
         
         // 1. Fetch Dashboard Analytics
-        const dashRes = await fetch("http://localhost:5000/api/admin/dashboard", {
+        const dashRes = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/dashboard`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
         if (dashRes.ok) setDashboardData(await dashRes.json());
 
         // MAGIC FIX 2: Fetch the Real 24-Hour Notifications!
-        const notifRes = await fetch("http://localhost:5000/api/admin/notifications", {
+        const notifRes = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/notifications`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
         if (notifRes.ok) setNotifications(await notifRes.json());
@@ -1120,7 +1120,7 @@ export default function Admin() {
   const handlePublish = async (newEvent) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/admin/events", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/events`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

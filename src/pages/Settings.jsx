@@ -110,7 +110,7 @@ function ProfileTab({ user }) {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await fetch("http://localhost:5000/api/user/avatar", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/avatar`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -144,7 +144,7 @@ function ProfileTab({ user }) {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await fetch("http://localhost:5000/api/user/avatar", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/avatar`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -238,7 +238,7 @@ function PersonalInfoTab({ user }) {
     reader.onload = async (ev) => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:5000/api/user/certificate", {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/user/certificate`, {
           method: "PUT",
           headers: { 
             "Content-Type": "application/json",
@@ -268,7 +268,7 @@ function PersonalInfoTab({ user }) {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await fetch("http://localhost:5000/api/user/profile", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/profile`, {
         method: "PUT",
         headers: { 
           "Content-Type": "application/json",
@@ -408,7 +408,7 @@ function SecurityTab() {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await fetch("http://localhost:5000/api/user/password", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/password`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -508,7 +508,7 @@ function NotificationsTab() {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await fetch("http://localhost:5000/api/user/notifications", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/notifications`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

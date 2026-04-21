@@ -17,8 +17,8 @@ export default function Representatives() {
     const fetchNetwork = async () => {
       try {
         const [resReps, resAdmins] = await Promise.all([
-          fetch("http://localhost:5000/api/representatives"),
-          fetch("http://localhost:5000/api/admins") // Fetch the admins!
+          fetch(`${import.meta.env.VITE_API_URL}/api/representatives`),
+          fetch(`${import.meta.env.VITE_API_URL}/api/admins`) // Fetch the admins!
         ]);
         
         if (resReps.ok) setReps(await resReps.json());
