@@ -770,9 +770,8 @@ app.get('/api/admin/notifications', verifyToken, async (req, res) => {
 });
 
 
-const MONGO_URI = "mongodb+srv://abdellahben965_db_user:aihouse123@cluster0.vgehfjl.mongodb.net/?appName=Cluster0";
 
-mongoose.connect(MONGO_URI)
+mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log(" Connected to MongoDB Atlas!"))
   .catch((err) => console.log(" Database connection error:", err));
 
