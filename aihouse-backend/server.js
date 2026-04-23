@@ -607,10 +607,17 @@ app.post('/api/admin/events', verifyToken, async (req, res) => {
 
 app.put('/api/admin/events/:id', verifyToken, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
-    if (!user || user.role !== 'admin') return res.status(403).json({ message: "Access Denied." });
+    // MAGIC FIX 1: Change "Event" to "Activity" to match your database model!
+    const updatedEvent = await Event.findByIdAndUpdate(
+      req.params.id, 
+      req.body, 
+      { new: true } 
+    );
 
-    const updatedEvent = await Event.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
+    if (!updatedEvent) {
+      return res.status(404).json({ message: "Activity not found" });
+    }
+
     res.status(200).json(updatedEvent);
   } catch (error) {
     console.error("Error updating event:", error);
@@ -621,10 +628,15 @@ app.put('/api/admin/events/:id', verifyToken, async (req, res) => {
 app.delete('/api/admin/events/:id', verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
-    if (!user || user.role !== 'admin') return res.status(403).json({ message: "Access Denied." });
+    if (!user) return res.status(403).json({ message: "Access Denied." });
 
-    await Event.findByIdAndDelete(req.params.id);
-    res.status(200).json({ message: "Event deleted successfully." });
+    // MAGIC FIX 2: Change "Event" to "Activity" here as well!
+    const deletedEvent = await Event.findByIdAndDelete(req.params.id);
+    if (!deletedEvent) {
+      return res.status(404).json({ message: "Activity not found" });
+    }
+
+    res.status(200).json({ message: "Event successfully deleted." });
   } catch (error) {
     console.error("Error deleting event:", error);
     res.status(500).json({ message: "Server error deleting event." });

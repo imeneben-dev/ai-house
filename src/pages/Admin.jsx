@@ -147,33 +147,35 @@ function ManageActivities({ events, setEvents, onAddEvent, setSuccessMsg }) {
   const handleDelete = async () => {
     try {
       const token = localStorage.getItem("token");
-      const repId = deleteTarget._id || deleteTarget.id;
+      const eventId = deleteTarget._id || deleteTarget.id;
       
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/representatives/${repId}`, {
+      // Fetch to the events route, NOT representatives!
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/events/${eventId}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });
       
       if (res.ok) {
-        setReps(prev => prev.filter(r => (r._id || r.id) !== repId));
-        setAdminsList(prev => prev.filter(a => (a._id || a.id) !== repId)); 
-
+        // Filter the EVENTS table, not the reps table!
+        setEvents(prev => prev.filter(e => (e._id || e.id) !== eventId));
         setDeleteTarget(null);
 
-        setSuccessMsg("Account permanently deleted & blacklisted!");
-        setTimeout(() => setSuccessMsg(""), 3000);
+        if (setSuccessMsg) {
+          setSuccessMsg("Activity permanently deleted!");
+          setTimeout(() => setSuccessMsg(""), 3000);
+        }
       }
     } catch (error) {
-      console.error("Failed to delete account", error);
+      console.error("Failed to delete activity", error);
     }
   };
 
   const handleSave = async () => {
     try {
       const token = localStorage.getItem("token");
-      const repId = editTarget._id || editTarget.id;
+      const eventId = editTarget._id || editTarget.id;
       
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/representatives/${repId}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/events/${eventId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -183,25 +185,19 @@ function ManageActivities({ events, setEvents, onAddEvent, setSuccessMsg }) {
       });
       
       if (res.ok) {
-        const updatedRep = await res.json();
+        const updatedEvent = await res.json();
         
-        if (updatedRep.role === "participant") {
-          setReps(prev => prev.filter(r => (r._id || r.id) !== repId));
-          setParticipants(prev => [...prev, updatedRep]);
-        } else if (updatedRep.role === "admin") {
-          setReps(prev => prev.filter(r => (r._id || r.id) !== repId));
-          setAdminsList(prev => [...prev, updatedRep]); 
-        } else {
-          setReps(prev => prev.map(r => (r._id || r.id) === repId ? updatedRep : r));
-        }
-
+        // Update the EVENTS table with the new data!
+        setEvents(prev => prev.map(e => (e._id || e.id) === eventId ? updatedEvent : e));
         setEditTarget(null);
 
-        setSuccessMsg("Representative updated successfully!");
-        setTimeout(() => setSuccessMsg(""), 3000);
+        if (setSuccessMsg) {
+          setSuccessMsg("Activity updated successfully!");
+          setTimeout(() => setSuccessMsg(""), 3000);
+        }
       }
     } catch (error) {
-      console.error("Failed to update representative", error);
+      console.error("Failed to update activity", error);
     }
   };
 
