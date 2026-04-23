@@ -411,6 +411,26 @@ app.post('/api/events', verifyToken, async (req, res) => {
   }
 });
 
+app.put('/api/events/:id', verifyToken, async (req, res) => {
+  try {
+
+    const updatedEvent = await Event.findByIdAndUpdate(
+      req.params.id, 
+      req.body, 
+      { new: true }
+    );
+
+    if (!updatedEvent) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    res.status(200).json(updatedEvent);
+  } catch (error) {
+    console.error("Error updating event:", error);
+    res.status(500).json({ message: "Server error updating event." });
+  }
+});
+
 app.post('/api/events/:id/register', verifyToken, async (req, res) => {
   try {
     const eventId = req.params.id;

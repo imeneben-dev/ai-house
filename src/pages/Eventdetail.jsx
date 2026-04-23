@@ -19,6 +19,25 @@ export default function EventDetail() {
 
   const [uploadingFile, setUploadingFile] = useState(false);
 
+  // ==========================================
+  // MAGIC FIX 1: State for the Edit Modal
+  // ==========================================
+  const [isEditing, setIsEditing] = useState(false);
+  const [editEventForm, setEditEventForm] = useState(event || {});
+
+  // Function to save the edits
+  const handleSaveEdit = async () => {
+    try {
+      // Send the updated data to your context/database
+      await updateEvent(event.id, editEventForm);
+      setIsEditing(false); // Close the modal
+      alert("Event updated successfully!"); // Simple success message
+    } catch (err) {
+      console.error("Failed to update event", err);
+      alert("Failed to update event.");
+    }
+  };
+
   const handleFileUpload = async (e, fileName) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -125,6 +144,27 @@ export default function EventDetail() {
             </span>
           </div>
           <h1 className="event-detail__title">{event.title}</h1>
+          <h1 style={{ color: "#fff", fontSize: "2rem", marginBottom: "0.5rem" }}>{event.title}</h1>
+          
+          {/* ========================================== */}
+          {/* MAGIC FIX 3: Exclusive Edit Button for the Owner */}
+          {/* ========================================== */}
+          {user?.fullName === event.instructor && (
+            <button 
+              onClick={() => {
+                setEditEventForm(event); // Load current data into the form
+                setIsEditing(true);      // Open the modal
+              }} 
+              style={{ 
+                marginTop: '1rem', padding: '8px 16px', background: 'rgba(255,255,255,0.15)', 
+                color: '#fff', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '8px', 
+                cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' 
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Edit Event Details
+            </button>
+          )}
           <p className="event-detail__instructor">Delivered by {event.instructor}</p>
         </div>
       </div>
@@ -259,7 +299,7 @@ export default function EventDetail() {
         </div>
 
         {/* Right: registration form (upcoming only) */}
-        {!isPast && (
+        {!isPast && user?.fullName !== event.instructor && (
           <div className="event-detail__register">
             <div className="event-detail__register-card">
               <h2 className="event-detail__register-title">Reserve Your Spot</h2>
@@ -309,6 +349,52 @@ export default function EventDetail() {
         )}
         </div>
       </div>
+
+      {/* ========================================== */}
+      {/* MAGIC FIX 4: The Edit Event Modal Window */}
+      {/* ========================================== */}
+      {isEditing && (
+        <div className="modal-overlay" onClick={() => setIsEditing(false)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="glass-modal" onClick={e => e.stopPropagation()} style={{ background: '#fff', padding: '2rem', borderRadius: '12px', width: '90%', maxWidth: '550px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
+            
+            <h2 style={{ marginBottom: '1.5rem', color: 'var(--text-main)' }}>Edit Event</h2>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', marginBottom: '5px' }}>Event Title</label>
+                <input value={editEventForm.title || ""} onChange={e => setEditEventForm({...editEventForm, title: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)' }} />
+              </div>
+              
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', marginBottom: '5px' }}>Topic</label>
+                <input value={editEventForm.topic || ""} onChange={e => setEditEventForm({...editEventForm, topic: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)' }} />
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', marginBottom: '5px' }}>Date</label>
+                  <input type="date" value={editEventForm.date || ""} onChange={e => setEditEventForm({...editEventForm, date: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)' }} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', marginBottom: '5px' }}>Time</label>
+                  <input type="time" value={editEventForm.time || ""} onChange={e => setEditEventForm({...editEventForm, time: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)' }} />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', marginBottom: '5px' }}>Location / Meet Link</label>
+                <input value={editEventForm.location || ""} onChange={e => setEditEventForm({...editEventForm, location: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)' }} />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem', justifyContent: 'flex-end' }}>
+              <button onClick={() => setIsEditing(false)} style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', background: 'var(--light-gray)', color: 'var(--text-main)', cursor: 'pointer', fontWeight: '600' }}>Cancel</button>
+              <button onClick={handleSaveEdit} style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', background: 'var(--blue)', color: '#fff', cursor: 'pointer', fontWeight: '600' }}>Save Changes</button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>
