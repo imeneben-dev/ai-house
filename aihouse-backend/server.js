@@ -8,7 +8,6 @@ require('dotenv').config();
 
 const app = express();
 
-const cors = require('cors');
 
 const corsOptions = {
   origin: 'https://aihousedz.netlify.app',
