@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAuth }   from "../context/AuthContext";
 import { useEvents } from "../context/EventsContext";
 import Footer from "../components/Footer";
+import { DEPARTMENTS } from "../data/mockData";
 import "./EventDetail.css";
 
 export default function EventDetail() {
@@ -18,6 +19,7 @@ export default function EventDetail() {
   const [loading, setLoading] = useState(false);
 
   const [uploadingFile, setUploadingFile] = useState(false);
+  const TOPICS = ["Python", "Data Science", "Machine Learning", "Automation", "AI Ethics", "AI in Research", "AI Challenge"];
 
   // ==========================================
   // MAGIC FIX 1: State for the Edit Modal
@@ -26,15 +28,41 @@ export default function EventDetail() {
   const [editEventForm, setEditEventForm] = useState(event || {});
 
   // Function to save the edits
+  // MAGIC FIX 2: State for the beautiful green message
+  const [successToast, setSuccessToast] = useState("");
+
   const handleSaveEdit = async () => {
     try {
-      // Send the updated data to your context/database
-      await updateEvent(event.id, editEventForm);
-      setIsEditing(false); // Close the modal
-      alert("Event updated successfully!"); // Simple success message
+      const token = localStorage.getItem("token");
+      
+      // 1. Send the edits to our new backend route!
+      // (If you use a deployed backend URL instead of localhost, change it here!)
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/events/${event.id || event._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(editEventForm)
+      });
+
+      if (res.ok) {
+        const updatedData = await res.json();
+        
+        // 2. Update the frontend context so the screen refreshes instantly
+        if (updateEvent) {
+           await updateEvent(event.id || event._id, updatedData); 
+        }
+
+        // 3. Close the modal and show the beautiful green message!
+        setIsEditing(false);
+        setSuccessToast("Event details updated successfully!");
+        setTimeout(() => setSuccessToast(""), 3500); // Hides after 3.5 seconds
+      } else {
+        alert("Failed to save. Check server logs.");
+      }
     } catch (err) {
       console.error("Failed to update event", err);
-      alert("Failed to update event.");
     }
   };
 
@@ -151,17 +179,13 @@ export default function EventDetail() {
           {/* ========================================== */}
           {user?.fullName === event.instructor && (
             <button 
-              onClick={() => {
-                setEditEventForm(event); // Load current data into the form
-                setIsEditing(true);      // Open the modal
-              }} 
-              style={{ 
-                marginTop: '1rem', padding: '8px 16px', background: 'rgba(255,255,255,0.15)', 
-                color: '#fff', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '8px', 
-                cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' 
-              }}
+              className="event-detail__edit-btn"
+              onClick={() => { setEditEventForm(event); setIsEditing(true); }} 
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
               Edit Event Details
             </button>
           )}
@@ -365,9 +389,52 @@ export default function EventDetail() {
                 <input value={editEventForm.title || ""} onChange={e => setEditEventForm({...editEventForm, title: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)' }} />
               </div>
               
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', marginBottom: '5px' }}>Topic</label>
-                <input value={editEventForm.topic || ""} onChange={e => setEditEventForm({...editEventForm, topic: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)' }} />
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', marginBottom: '5px' }}>Type</label>
+                  <select value={editEventForm.type || ""} onChange={e => setEditEventForm({...editEventForm, type: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                    <option value="Workshop">Workshop</option>
+                    <option value="Seminar">Seminar</option>
+                    <option value="Competition">Competition</option>
+                  </select>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', marginBottom: '5px' }}>Audience</label>
+                  <select value={editEventForm.audience || ""} onChange={e => setEditEventForm({...editEventForm, audience: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                    <option value="Students">Students</option>
+                    <option value="Representatives">Representatives</option>
+                    <option value="General Public">General Public</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', marginBottom: '5px' }}>Topic</label>
+                  <select 
+                    value={editEventForm.topic || ""} 
+                    onChange={e => setEditEventForm({...editEventForm, topic: e.target.value})} 
+                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)' }}
+                  >
+                    <option value="" disabled>Select Topic</option>
+                    {TOPICS.map(t => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', marginBottom: '5px' }}>Department</label>
+                  <select 
+                    value={editEventForm.department || ""} 
+                    onChange={e => setEditEventForm({...editEventForm, department: e.target.value})} 
+                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)' }}
+                  >
+                    <option value="" disabled>Select Department</option>
+                    {DEPARTMENTS.map(dept => (
+                      <option key={dept} value={dept}>{dept}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div style={{ display: 'flex', gap: '1rem' }}>
@@ -381,9 +448,30 @@ export default function EventDetail() {
                 </div>
               </div>
 
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                {/* Location Input (Takes up more space) */}
+                <div style={{ flex: 2 }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', marginBottom: '5px' }}>Location / Meet Link</label>
+                  <input value={editEventForm.location || ""} onChange={e => setEditEventForm({...editEventForm, location: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)' }} />
+                </div>
+                
+                {/* MAGIC FIX: The Important Number of Seats Field! */}
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', marginBottom: '5px' }}>Number of Seats</label>
+                  <input 
+                    type="number" 
+                    min="1" 
+                    placeholder="e.g. 50" 
+                    value={editEventForm.seats || ""} 
+                    onChange={e => setEditEventForm({...editEventForm, seats: e.target.value})} 
+                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)' }} 
+                  />
+                </div>
+              </div>
+
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', marginBottom: '5px' }}>Location / Meet Link</label>
-                <input value={editEventForm.location || ""} onChange={e => setEditEventForm({...editEventForm, location: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)' }} />
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', marginBottom: '5px' }}>Description</label>
+                <textarea rows="4" value={editEventForm.desc || ""} onChange={e => setEditEventForm({...editEventForm, desc: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', fontFamily: 'inherit' }} />
               </div>
             </div>
 
@@ -397,6 +485,18 @@ export default function EventDetail() {
       )}
 
       <Footer />
+
+      {/* MAGIC FIX 3: The Beautiful Green Toast Message */}
+      {successToast && (
+        <div className="event-toast-success">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          {successToast}
+        </div>
+      )}
+
     </div>
   );
 }
